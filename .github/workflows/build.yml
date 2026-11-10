@@ -1,0 +1,51 @@
+name: Build SkellCore VST Template (Windows VST3 + Standalone)
+# Iterative plugin development often pushes many commits. Cancel superseded
+# branch/PR runs to avoid multiple resource-heavy JUCE builds in parallel.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'SkellCore/**'
+      - 'CMakeLists.txt'
+      - 'Source/**'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+      - name: Package
+        shell: pwsh
+        run: |
+          $plugin = Get-ChildItem -Path build -Directory -Recurse -Filter '*.vst3' | Select-Object -First 1
+          if (-not $plugin) { throw 'VST3 bundle missing' }
+          Compress-Archive -Path $plugin.FullName -DestinationPath SkellCore-Template-Windows-VST3.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: SkellCore-Template-Windows-VST3
+          path: SkellCore-Template-Windows-VST3.zip
+          if-no-files-found: error
+
+      - name: Package Standalone
+        shell: pwsh
+        run: |
+          $app = Get-ChildItem -Path build -File -Recurse -Filter 'Skell Quickstart.exe' | Select-Object -First 1
+          if (-not $app) { throw 'Skell Quickstart standalone executable missing' }
+          Compress-Archive -Path $app.FullName -DestinationPath SkellCore-Template-Windows-Standalone.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: SkellCore-Template-Windows-Standalone
+          path: SkellCore-Template-Windows-Standalone.zip
+          if-no-files-found: error

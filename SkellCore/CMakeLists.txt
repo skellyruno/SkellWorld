@@ -1,0 +1,67 @@
+cmake_minimum_required(VERSION 3.22)
+project(SkellCore VERSION 0.5.0 LANGUAGES CXX)
+
+add_library(SkellCoreDSP INTERFACE)
+add_library(SkellCore::DSP ALIAS SkellCoreDSP)
+target_compile_features(SkellCoreDSP INTERFACE cxx_std_17)
+target_include_directories(SkellCoreDSP INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+# This optional target is available only after JUCE's gui_basics target exists.
+if(TARGET juce::juce_gui_basics)
+  add_library(SkellCoreUI INTERFACE)
+  add_library(SkellCore::UI ALIAS SkellCoreUI)
+  target_compile_features(SkellCoreUI INTERFACE cxx_std_17)
+  target_include_directories(SkellCoreUI INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_link_libraries(SkellCoreUI INTERFACE juce::juce_gui_basics juce::juce_audio_processors)
+endif()
+
+# Editor screenshot utility: optional; the portable DSP targets remain JUCE-free.
+if(TARGET SkellCoreUI AND TARGET juce::juce_graphics)
+  add_library(SkellCoreRendererSupport INTERFACE)
+  add_library(SkellCore::UIRenderer ALIAS SkellCoreRendererSupport)
+  target_compile_features(SkellCoreRendererSupport INTERFACE cxx_std_17)
+  target_include_directories(SkellCoreRendererSupport INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+  target_link_libraries(SkellCoreRendererSupport INTERFACE
+    SkellCore::UI juce::juce_graphics juce::juce_gui_basics)
+endif()
+
+option(SKELLCORE_BUILD_TESTS "Build portable SkellCore DSP tests" OFF)
+if(SKELLCORE_BUILD_TESTS)
+  enable_testing()
+  add_executable(SkellCoreTests tests/test_core.cpp)
+  target_link_libraries(SkellCoreTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreTests COMMAND SkellCoreTests)
+  add_executable(SkellCoreIntegrationsTests tests/test_integrations.cpp)
+  target_link_libraries(SkellCoreIntegrationsTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreIntegrationsTests COMMAND SkellCoreIntegrationsTests)
+  add_executable(SkellCoreMultirateTests tests/test_multirate.cpp)
+  target_link_libraries(SkellCoreMultirateTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreMultirateTests COMMAND SkellCoreMultirateTests)
+  add_executable(SkellCoreLowCpuSafetyTests tests/test_lowcpu_safety.cpp)
+  target_link_libraries(SkellCoreLowCpuSafetyTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreLowCpuSafetyTests COMMAND SkellCoreLowCpuSafetyTests)
+  add_executable(SkellCoreLimiterParityTests tests/test_limiter_parity.cpp)
+  target_link_libraries(SkellCoreLimiterParityTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreLimiterParityTests COMMAND SkellCoreLimiterParityTests)
+  add_executable(SkellCoreCachedParametersTests tests/test_cached_parameters.cpp)
+  target_link_libraries(SkellCoreCachedParametersTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreCachedParametersTests COMMAND SkellCoreCachedParametersTests)
+  add_executable(SkellCoreHostLifecycleTests tests/test_host_lifecycle.cpp)
+  target_link_libraries(SkellCoreHostLifecycleTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreHostLifecycleTests COMMAND SkellCoreHostLifecycleTests)
+  find_package(Threads REQUIRED)
+  add_executable(SkellWorldProtocolTests tests/test_world.cpp)
+  target_link_libraries(SkellWorldProtocolTests PRIVATE SkellCore::DSP Threads::Threads)
+  add_test(NAME SkellWorldProtocolTests COMMAND SkellWorldProtocolTests)
+endif()
+
+option(SKELLCORE_BUILD_BENCHMARKS "Build opt-in SkellCore CPU benchmark (non-gating)" OFF)
+if(SKELLCORE_BUILD_BENCHMARKS)
+  add_executable(SkellCoreBenchmark bench/bench_core.cpp)
+  target_link_libraries(SkellCoreBenchmark PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreBenchmark COMMAND SkellCoreBenchmark)
+endif()

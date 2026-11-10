@@ -1,0 +1,10 @@
+/build/
+/build-*/
+/.vs/
+/out/
+/cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
+*.user
+*.suo
+.DS_Store

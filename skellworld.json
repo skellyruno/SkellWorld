@@ -1,0 +1,13 @@
+{
+  "schema": "skellworld-plugin/1",
+  "product_id": "skellcore.quickstart",
+  "name": "Skell Quickstart",
+  "manufacturer": "Skell Audio",
+  "plugin_code": "Sk01",
+  "bundle_id": "audio.skell.quickstart",
+  "connection": "explicit-opt-in-loopback",
+  "capabilities": [
+    "presence",
+    "informational-events"
+  ]
+}

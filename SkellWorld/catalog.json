@@ -1,0 +1,217 @@
+{
+  "schema": "skellworld-catalog/1",
+  "world": "SKELL",
+  "source": "User-owned GitHub SKELL repositories; catalog is an inventory, not proof of connectivity",
+  "core": "skellyruno/skell-vst-template",
+  "transport": "opt-in localhost only",
+  "plugins": [
+    {
+      "repository": "skellyruno/skell-autotune-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Sktn",
+      "bundle_id": "com.humhouse.skellytune",
+      "display_name": "SkellyTune"
+    },
+    {
+      "repository": "skellyruno/skell-delay-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Dlay",
+      "bundle_id": null,
+      "display_name": "Skell Delay"
+    },
+    {
+      "repository": "skellyruno/skell-gate-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SkGl",
+      "bundle_id": "uno.skellyr.skellglitch",
+      "display_name": "Skell-Glitch"
+    },
+    {
+      "repository": "skellyruno/skell-rack-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Mfx1",
+      "bundle_id": null,
+      "display_name": "Modular FX Suite"
+    },
+    {
+      "repository": "skellyruno/skell-key-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "TnRc",
+      "bundle_id": "audio.independent.tonic-recreation",
+      "display_name": "TONIC-inspired"
+    },
+    {
+      "repository": "skellyruno/skell-vst-template",
+      "product_id": "skellcore.quickstart",
+      "integration": "world-demo",
+      "vst3_code": "Sk01",
+      "bundle_id": "audio.skell.quickstart",
+      "display_name": "Skell Quickstart"
+    },
+    {
+      "repository": "skellyruno/skell-scratch-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "ScP1",
+      "bundle_id": "audio.skell.scratchpad",
+      "display_name": "ScratchPad"
+    },
+    {
+      "repository": "skellyruno/skell-stop-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Sd01",
+      "bundle_id": "audio.skell.stopdial",
+      "display_name": "StopDial"
+    },
+    {
+      "repository": "skellyruno/skell-eq-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SeQ1",
+      "bundle_id": "audio.skelly.eq",
+      "display_name": "Skelly EQ"
+    },
+    {
+      "repository": "skellyruno/skell-deesser-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SkDs",
+      "bundle_id": "audio.skelly.deesser",
+      "display_name": "Skelly DeEsser"
+    },
+    {
+      "repository": "skellyruno/skell-fan-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Bz01",
+      "bundle_id": "audio.skell.breezemod",
+      "display_name": "BreezeMod"
+    },
+    {
+      "repository": "skellyruno/skell-separator-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Ss01",
+      "bundle_id": "audio.skell.separator",
+      "display_name": "Skell Separator"
+    },
+    {
+      "repository": "skellyruno/skell-choir-vst",
+      "product_id": null,
+      "integration": "shared-core-only",
+      "vst3_code": "OmF2",
+      "bundle_id": "audio.skell.omnichoirfx",
+      "display_name": "OmniChoir FX"
+    },
+    {
+      "repository": "skellyruno/skell-chess-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "CkMt",
+      "bundle_id": "audio.skell.checkmate",
+      "display_name": "Checkmate"
+    },
+    {
+      "repository": "skellyruno/skell-spectre-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Spct",
+      "bundle_id": "audio.skell.spectre",
+      "display_name": "SKELL SPECTRE"
+    },
+    {
+      "repository": "skellyruno/skell-maw-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": null,
+      "bundle_id": null,
+      "display_name": null
+    },
+    {
+      "repository": "skellyruno/skell-master-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SkM1",
+      "bundle_id": "audio.skelly.master",
+      "display_name": "Skelly Master"
+    },
+    {
+      "repository": "skellyruno/skelltune-mini",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": null,
+      "bundle_id": null,
+      "display_name": null
+    },
+    {
+      "repository": "skellyruno/skell-necromancer-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SnCr",
+      "bundle_id": "audio.skellyr.necromancer",
+      "display_name": "Skell-Necromancer"
+    },
+    {
+      "repository": "skellyruno/skell-afar-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Afar",
+      "bundle_id": "audio.skell.afar",
+      "display_name": "Skell-Afar"
+    },
+    {
+      "repository": "skellyruno/skell-spacer-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Sk02",
+      "bundle_id": "audio.skell.spacer",
+      "display_name": "Skell Spacer"
+    },
+    {
+      "repository": "skellyruno/skell-silence-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Sl01",
+      "bundle_id": "uno.skellyr.silence",
+      "display_name": "Skell Silence"
+    },
+    {
+      "repository": "skellyruno/skell-preset-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SkPr",
+      "bundle_id": "audio.skell.preset",
+      "display_name": "Skell-Preset"
+    },
+    {
+      "repository": "skellyruno/skell-flang-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "Fl26",
+      "bundle_id": "audio.skell.skellflang",
+      "display_name": "Skell-Flang"
+    },
+    {
+      "repository": "skellyruno/skell-adliblab-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "AdL1",
+      "bundle_id": "uno.skellyr.adliblab",
+      "display_name": "Skell AdlibLab"
+    },
+    {
+      "repository": "skellyruno/skell-cast-vst",
+      "product_id": null,
+      "integration": "planned",
+      "vst3_code": "SkCa",
+      "bundle_id": "uno.skellyr.skellcast",
+      "display_name": "SkellCast"
+    }
+  ]
+}

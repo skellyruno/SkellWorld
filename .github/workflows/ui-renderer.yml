@@ -1,0 +1,48 @@
+name: SkellCore / Headless JUCE UI renderer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SkellCore/include/SkellCore/HeadlessUIRenderer.h'
+      - 'SkellCore/CMakeLists.txt'
+      - 'tools/SkellCoreUiRendererMain.cpp'
+      - 'Source/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/ui-renderer.yml'
+  pull_request:
+    paths:
+      - 'SkellCore/include/SkellCore/HeadlessUIRenderer.h'
+      - 'SkellCore/CMakeLists.txt'
+      - 'tools/SkellCoreUiRendererMain.cpp'
+      - 'Source/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/ui-renderer.yml'
+  workflow_dispatch:
+
+jobs:
+  screenshot-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure renderer against the real editor
+        run: cmake -S . -B build -A x64 -DSKELLCORE_BUILD_UI_RENDERER=ON
+      - name: Compile renderer
+        run: cmake --build build --config Release --target SkellCoreUISmokeRenderer --parallel 2
+      - name: Capture and validate screenshots
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build -Recurse -File -Filter SkellCoreUISmokeRenderer.exe | Select-Object -First 1
+          if (-not $exe) { throw 'Renderer executable not found' }
+          & $exe.FullName (Join-Path (Get-Location) 'ui-screenshots')
+          if ($LASTEXITCODE -ne 0) { throw "Renderer failed with exit code $LASTEXITCODE" }
+          $images = @(Get-ChildItem ui-screenshots -Filter *.png)
+          if ($images.Count -ne 3) { throw "Expected 3 PNGs, found $($images.Count)" }
+          if (-not (Test-Path ui-screenshots/manifest.json)) { throw 'Missing screenshot manifest' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkellCore-Headless-UI-Screenshots
+          path: ui-screenshots/*
+          if-no-files-found: error
+          retention-days: 14
