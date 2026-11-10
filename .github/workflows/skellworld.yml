@@ -28,5 +28,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Compile Python sources
         run: python -m compileall -q tools/skellworld_hub.py tools/skellworld_dashboard.py SkellWorld/tests
+      - name: JavaScript syntax validation
+        run: node --check SkellWorld/web/app.js
       - name: Integration and security regression tests
         run: python -m unittest discover -s SkellWorld/tests -v

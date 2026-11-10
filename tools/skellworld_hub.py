@@ -220,6 +220,7 @@ def main():
     parser.add_argument("--port", type=int, default=PORT)
     parser.add_argument("--dashboard-port", type=int, default=48674)
     parser.add_argument("--no-dashboard", action="store_true", help="disable read-only local web console")
+    parser.add_argument("--open-browser", action="store_true", help="open the local console in your default browser")
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("port must be between 1024 and 65535")
@@ -241,6 +242,9 @@ def main():
             if console is not None:
                 print(f"SkellWorld dashboard: http://127.0.0.1:{args.dashboard_port}", flush=True)
             print("Opt-in informational events only. Ctrl+C to exit.", flush=True)
+            if console is not None and args.open_browser:
+                import webbrowser
+                webbrowser.open(f"http://127.0.0.1:{args.dashboard_port}", new=1)
             server.serve_forever(poll_interval=0.2)
         except KeyboardInterrupt:
             pass

@@ -64,7 +64,7 @@ class DashboardTests(unittest.TestCase):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
         self.assertGreaterEqual(len(json.loads(raw)["plugins"]), 20)
-        for page, marker in [("/", b"SKELL"), ("/style.css", b".shell"), ("/app.js", b"renderStatus")]:
+        for page, marker in [("/", b"catalog-search"), ("/style.css", b".filter-btn"), ("/app.js", b"filterCatalog")]:
             status, body, _ = self.request(path=page)
             self.assertEqual(status, 200)
             self.assertIn(marker, body)

@@ -61,7 +61,54 @@ class WorldHubTests(unittest.TestCase):
         bf.readline(256);af.readline(256)
         a.sendall(hub.encode("EVENT","one","plugin.setParameter","gain=9"))
         self.assertEqual(hub.decode(bf.readline(256)),["PEER","one","skell.eq","offline"])
+    def test_parallel_joins_have_exact_peer_counts(self):
+        from concurrent.futures import ThreadPoolExecutor
+        start=threading.Barrier(6)
+        def join(index):
+            sock=socket.create_connection(self.server.server_address, timeout=4)
+            sock.settimeout(4)
+            stream=sock.makefile("rb")
+            self.clients.append((sock,stream))
+            start.wait(timeout=4)
+            ident="instance-"+str(index)
+            sock.sendall(hub.encode("HELLO",ident,"skell.demo","Demo"))
+            welcome=hub.decode(stream.readline(256))
+            peers=[hub.decode(stream.readline(256)) for _ in range(5)]
+            return ident,welcome,peers
+        with ThreadPoolExecutor(max_workers=6) as workers:
+            rows=list(workers.map(join,range(6)))
+        for ident,welcome,peers in rows:
+            self.assertEqual(welcome,["WELCOME","hub","status","connected"])
+            self.assertEqual(len(peers),5)
+            self.assertTrue(all(p and p[0]=="PEER" and p[3]=="online" for p in peers))
+            self.assertEqual({p[1] for p in peers},{r[0] for r in rows}-{ident})
+        self.assertEqual(self.server.snapshot()["peer_count"],6)
+
+    def test_parallel_events_are_complete_frames(self):
+        from concurrent.futures import ThreadPoolExecutor
+        a,af=self.peer("left","skell.left")
+        b,bf=self.peer("right","skell.right")
+        self.assertEqual(hub.decode(af.readline(256))[0],"PEER")
+        self.assertEqual(hub.decode(bf.readline(256))[0],"PEER")
+        c,cf=self.peer("watch","skell.watch")
+        for _ in range(2):
+            self.assertEqual(hub.decode(cf.readline(256))[0],"PEER")
+        self.assertEqual(hub.decode(af.readline(256))[0],"PEER")
+        self.assertEqual(hub.decode(bf.readline(256))[0],"PEER")
+        def send(sock,identity):
+            for n in range(12):
+                sock.sendall(hub.encode("EVENT",identity,"theme",f"{identity}-{n}"))
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            jobs=[workers.submit(send,a,"left"),workers.submit(send,b,"right")]
+            messages=[hub.decode(cf.readline(256)) for _ in range(24)]
+            for job in jobs: job.result(timeout=5)
+        self.assertTrue(all(m and m[0]=="EVENT" and m[2]=="theme" for m in messages))
+        self.assertEqual({m[3] for m in messages},
+                         {f"{identity}-{n}" for identity in ("left","right") for n in range(12)})
+
     def test_loopback_only(self):
         self.assertEqual(self.server.server_address[0],"127.0.0.1")
+        with self.assertRaises(ValueError):
+            hub.WorldServer(("0.0.0.0",0))
 
 if __name__=="__main__":unittest.main()
