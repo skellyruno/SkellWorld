@@ -1,4 +1,32 @@
-# SkellCore VST Template
+# SkellWorld — Connected SKELL ecosystem
+
+SkellWorld is the **local-first connection layer** for SKELL audio software. It inventories known SKELL products, shows plugins that **explicitly join** the SW1 local hub, and displays non-privileged activity in a read-only desktop-browser console. It does **not** automatically discover or modify installed plugins.
+
+## Run SkellWorld
+
+On Windows, run `Start-SkellWorld.bat` (Python 3 required). It opens the local dashboard:
+
+**http://127.0.0.1:48674** — read-only console  
+**127.0.0.1:48673** — opt-in informational plugin bus
+
+Or run `python tools/skellworld_hub.py` and open the dashboard address manually.
+
+The catalog is a roadmap, **not** a claim that all listed products are installed or connected. The demo Quickstart plugin in this checkout is the currently connected integration example.
+
+## Separate SKELL repositories
+
+- **SkellWorld:** local presence protocol, hub, read-only dashboard and ecosystem integration contracts.
+- **SkellCore:** maintained separately at [skell-vst-template](https://github.com/skellyruno/skell-vst-template), shared DSP, JUCE UI utilities and compatible demo sources.
+- **Project Hub:** separately maintained developer workspace. Future integration must use explicit consent and a permissioned API, not remote commands added to the SW1 informational protocol.
+- **Individual plugin repos:** own their VST3 identities, audio code and presets. Opt-in additions must preserve host automation and saved FL Studio projects.
+
+**Migration note:** This repository was created from the shared template, so its `SkellCore/`, `Source/` and JUCE CMake files are a **bundled compatibility snapshot**. They are not an independently updated replacement for upstream SkellCore. Keep them isolated from future hub development until a pinned dependency migration is tested.
+
+See [SkellWorld integration guide](SkellWorld/README.md) and [protocol / architecture](docs/SKELLWORLD_ARCHITECTURE.md).
+
+---
+
+## Bundled SkellCore quickstart reference
 Shared **Skell Audio** foundation for JUCE 8 C++17 VST3 plugins.
 
 The former Skell VST Quickstart is preserved as a **small gain demo plugin**, with its original VST3 manufacturer, plugin code and bundle identity unchanged. Build a new plugin by choosing unique IDs; never reuse these demo IDs in commercial releases.
