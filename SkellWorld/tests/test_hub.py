@@ -106,6 +106,25 @@ class WorldHubTests(unittest.TestCase):
         self.assertEqual({m[3] for m in messages},
                          {f"{identity}-{n}" for identity in ("left","right") for n in range(12)})
 
+    def test_world_key_only_from_skellkey(self):
+        key, kf = self.peer("key-01", "skell.key")
+        tuner, tf = self.peer("tuner-01", "skell.tune")
+        tf.readline(256)
+        kf.readline(256)
+        key.sendall(hub.encode("EVENT", "key-01", "musical.key", "6.1"))
+        self.assertEqual(hub.decode(tf.readline(256)),
+                         ["EVENT", "key-01", "musical.key", "6.1"])
+        tuner.sendall(hub.encode("EVENT", "tuner-01", "musical.key", "0.0"))
+        self.assertEqual(hub.decode(kf.readline(256))[:2], ["PEER", "tuner-01"])
+
+    def test_reject_invalid_musical_key(self):
+        key,kf = self.peer("key-01","skell.key")
+        tune,tf = self.peer("tune-01","skell.tune")
+        tf.readline(256)
+        kf.readline(256)
+        key.sendall(hub.encode("EVENT","key-01","musical.key","12.0"))
+        self.assertEqual(hub.decode(tf.readline(256))[:2], ["PEER","key-01"])
+
     def test_loopback_only(self):
         self.assertEqual(self.server.server_address[0],"127.0.0.1")
         with self.assertRaises(ValueError):
