@@ -1,0 +1,32 @@
+name: SkellWorld local hub and dashboard
+on:
+  push:
+    paths:
+      - "tools/skellworld_*.py"
+      - "SkellWorld/**"
+      - ".github/workflows/skellworld.yml"
+  pull_request:
+    paths:
+      - "tools/skellworld_*.py"
+      - "SkellWorld/**"
+      - ".github/workflows/skellworld.yml"
+permissions:
+  contents: read
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile Python sources
+        run: python -m compileall -q tools/skellworld_hub.py tools/skellworld_dashboard.py SkellWorld/tests
+      - name: Integration and security regression tests
+        run: python -m unittest discover -s SkellWorld/tests -v

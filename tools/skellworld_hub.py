@@ -6,6 +6,7 @@ Start manually: python tools/skellworld_hub.py
 from __future__ import annotations
 import argparse
 import re
+from collections import deque
 import socketserver
 import threading
 import time
@@ -49,20 +50,55 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         super().__init__(address, WorldHandler)
         self.guard = threading.Lock()
         self.peers = {}
+        self.booted = time.monotonic()
+        self.events = deque(maxlen=80)
+        self.sequence = 0
 
-    def register(self, peer, ident, product):
+    def _record_locked(self, kind, ident, product, detail):
+        self.sequence += 1
+        self.events.append({
+            "seq": self.sequence, "at": round(time.time(), 3),
+            "kind": kind, "instance_id": ident,
+            "product_id": product, "detail": detail,
+        })
+
+    def snapshot(self):
+        """Return a bounded, JSON-compatible, read-only state snapshot."""
+        with self.guard:
+            peers = sorted((
+                {"instance_id": ident, "product_id": product, "display_name": name}
+                for ident, product, name in self.peers.values()
+            ), key=lambda p: (p["product_id"], p["instance_id"]))
+            return {
+                "schema": "skellworld-status/1",
+                "peer_count": len(peers),
+                "uptime_seconds": max(0, int(time.monotonic() - self.booted)),
+                "peers": peers, "events": list(self.events),
+                "sequence": self.sequence,
+            }
+
+    def record_event(self, peer, topic, value):
+        with self.guard:
+            info = self.peers.get(peer)
+            if info is not None:
+                self._record_locked("event", info[0], info[1], topic + ": " + value)
+
+    def register(self, peer, ident, product, display):
         with self.guard:
             if (len(self.peers) >= MAX_CLIENTS or
-                any(i == ident for i, _ in self.peers.values())):
+                any(info[0] == ident for info in self.peers.values())):
                 return None
             existing = list(self.peers.items())
-            self.peers[peer] = (ident, product)
+            self.peers[peer] = (ident, product, display)
+            self._record_locked("join", ident, product, display)
             return existing
 
     def unregister(self, peer):
         with self.guard:
             was = self.peers.pop(peer, None)
             others = list(self.peers)
+            if was:
+                self._record_locked("leave", was[0], was[1], "offline")
         if was:
             self.send_many(others, encode("PEER", was[0], was[1], "offline"))
 
@@ -108,20 +144,21 @@ class WorldHandler(socketserver.BaseRequestHandler):
                     if ident is None:
                         if kind != "HELLO":
                             break
-                        existing = self.server.register(self, who, topic)
+                        existing = self.server.register(self, who, topic, value)
                         if existing is None:
                             self.request.sendall(encode("ERROR", "hub", "status", "capacity_or_duplicate"))
                             break
                         ident, product = who, topic
                         self.request.settimeout(None)  # idle links stay connected
                         self.request.sendall(encode("WELCOME", "hub", "status", "connected"))
-                        for peer, (pident, pproduct) in existing:
+                        for peer, (pident, pproduct, _display) in existing:
                             self.request.sendall(encode("PEER", pident, pproduct, "online"))
                         self.server.broadcast(self, encode("PEER", ident, product, "online"))
                         continue
                     if who != ident:  # no spoofing another live socket identity
                         break
                     if kind == "EVENT" and topic in TOPICS:
+                        self.server.record_event(self, topic, value)
                         self.server.broadcast(self, encode("EVENT", ident, topic, value))
                     elif kind == "BYE":
                         break
@@ -136,17 +173,37 @@ class WorldHandler(socketserver.BaseRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=PORT)
+    parser.add_argument("--dashboard-port", type=int, default=48674)
+    parser.add_argument("--no-dashboard", action="store_true", help="disable read-only local web console")
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("port must be between 1024 and 65535")
+    if not 1024 <= args.dashboard_port <= 65535:
+        parser.error("dashboard port must be between 1024 and 65535")
+    if not args.no_dashboard and args.port == args.dashboard_port:
+        parser.error("hub and dashboard ports must differ")
     with WorldServer(("127.0.0.1", args.port)) as server:
-        print(f"SkellWorld listening ONLY on 127.0.0.1:{args.port}", flush=True)
-        print("Opt-in presence and informational events only. Ctrl+C to exit.", flush=True)
+        console, console_thread = None, None
         try:
+            if not args.no_dashboard:
+                from skellworld_dashboard import DashboardServer
+                console = DashboardServer(("127.0.0.1", args.dashboard_port), server)
+                console_thread = threading.Thread(
+                    target=console.serve_forever, kwargs={"poll_interval": 0.2},
+                    name="SkellWorld read-only console", daemon=True)
+                console_thread.start()
+            print(f"SkellWorld local hub: 127.0.0.1:{args.port}", flush=True)
+            if console is not None:
+                print(f"SkellWorld dashboard: http://127.0.0.1:{args.dashboard_port}", flush=True)
+            print("Opt-in informational events only. Ctrl+C to exit.", flush=True)
             server.serve_forever(poll_interval=0.2)
         except KeyboardInterrupt:
             pass
-        server.shutdown()
+        finally:
+            if console is not None:
+                console.shutdown()
+                console.server_close()
+                console_thread.join(timeout=3)
 
 if __name__ == "__main__":
     main()
