@@ -36,6 +36,16 @@
       </div>
       <section class="panel catalog-panel">
         <div class="panel-heading"><div><span class="eyebrow green">ECOSYSTEM DIRECTORY</span><h3>Skell catalog</h3><p>Inventory only. Listed plugins are not necessarily installed or connected.</p></div><span class="pill">ADOPTION ROADMAP</span></div>
+        <div class="catalog-tools">
+          <label class="catalog-search"><span class="visually-hidden">Search SKELL products</span><input id="catalog-search" type="search" autocomplete="off" placeholder="Search products or repositories…" aria-label="Search products"></label>
+          <div class="catalog-filters" role="group" aria-label="Catalog integration status">
+            <button class="filter-btn selected" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter-btn" type="button" data-filter="world-demo" aria-pressed="false">World demo</button>
+            <button class="filter-btn" type="button" data-filter="shared-core-only" aria-pressed="false">Core only</button>
+            <button class="filter-btn" type="button" data-filter="planned" aria-pressed="false">Planned</button>
+          </div>
+        </div>
+        <p id="catalog-summary" class="catalog-summary" aria-live="polite">Loading products…</p>
         <div id="catalog" class="catalog-grid"><p class="muted">Loading catalog…</p></div>
       </section>
     </main>
