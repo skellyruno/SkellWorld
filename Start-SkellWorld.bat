@@ -4,6 +4,7 @@ cd /d "%~dp0"
 title SkellWorld Local Hub
 echo.
 echo   SKELLWORLD  /  LOCAL CONNECTION HUB
+echo   Dashboard: http://127.0.0.1:48674
 echo   Listening only on your own computer.  Ctrl+C to exit.
 echo.
 where py >nul 2>nul

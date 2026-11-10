@@ -66,3 +66,22 @@ python -m unittest discover -s SkellWorld/tests -v
 ```
 
 Windows VST3 and Standalone builds compile the JUCE WorldLink. A real two-instance FL Studio smoke test is still needed before declaring DAW-level integration complete.
+
+## New: local visual console
+
+The standalone SkellWorld repository adds a **read-only localhost web dashboard** to the existing SW1 hub. Run:
+
+    python tools/skellworld_hub.py
+
+Then open **http://127.0.0.1:48674**. The plug-in protocol still uses **127.0.0.1:48673**. On Windows run **Start-SkellWorld.bat**.
+
+The dashboard shows active opted-in instances, bounded informational activity, uptime, and the catalog. A planned catalog entry does not mean its plugin is installed or connected. No automatic scanning, audio streaming, remote parameter changes, cloud, or credential collection.
+
+Security boundaries: loopback-only listener, GET/HEAD read-only endpoints, strict Host/Origin checks, restrictive Content Security Policy, no raw HTML rendering of incoming names, and bounded in-memory activity. Other local processes **can spoof informational events** in protocol v1; do not trust this bus for privileged actions.
+
+For alternate ports or CLI-only use:
+
+    python tools/skellworld_hub.py --port 48673 --dashboard-port 48674
+    python tools/skellworld_hub.py --no-dashboard
+
+Test: python -m unittest discover -s SkellWorld/tests -v

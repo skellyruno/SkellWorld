@@ -7,6 +7,10 @@ The former Skell VST Quickstart is preserved as a **small gain demo plugin**, wi
 
 **[SkellWorld](SkellWorld/README.md)** now adds an opt-in localhost presence/events hub to the shared foundation. Run `python tools/skellworld_hub.py`, then click JOIN WORLD in two quickstart plugin instances. Other SKELL products are catalogued for gradual adoption; **they are not yet connected automatically**. No audio-thread networking or remote parameter control.
 
+## Run SkellWorld's visual local hub
+
+This repository also hosts the first standalone SkellWorld console. Run `python tools/skellworld_hub.py`, then visit **http://127.0.0.1:48674** (or double-click `Start-SkellWorld.bat` on Windows). The directory is an inventory, not an installed-plugin scanner. Read the [SkellWorld guide](SkellWorld/README.md).
+
 ## Contents
 - `SkellCore::DSP`: portable C++17 TempoClock, PhraseTracker, OnsetDetector, four-line FDNReverb, prototype 4× interpolated-peak limiter, PitchFormantEngine.
 - `SkellCore::UI`: JUCE LookAndFeel, colour themes and glow cache.
