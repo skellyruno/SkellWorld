@@ -85,3 +85,15 @@ For alternate ports or CLI-only use:
     python tools/skellworld_hub.py --no-dashboard
 
 Test: python -m unittest discover -s SkellWorld/tests -v
+
+## Next reliability / directory milestone
+
+The SW1 hub serializes outgoing frames per connected peer and enforces a short write deadline. New peers are only announced to already-registered peers, preventing duplicate **online** messages during concurrent joins. Registered peers remain limited to 32, and invalid/non-local listener addresses are rejected.
+
+The dashboard now searches known SKELL repository names and offers **All / World demo / Core only / Planned** filters. Repository cards link to GitHub only if their names match the expected `skellyruno/<repository>` format. Catalog entries are not proof a product is installed, running, licensed, or integrated.
+
+The dashboard stops polling while its browser tab is hidden and avoids recreating peer/event lists when the hub's activity sequence is unchanged. A reconnect or hub restart invalidates stale display state.
+
+Validation includes concurrent peer-registration and simultaneous informational-event regression tests, plus HTML endpoint tests and a JavaScript syntax check. The SW1 protocol is still informational only and has no authentication: do not add privileged control or any user file access.
+
+**Developer Mode / Project Hub:** Project Hub is a separate product and repository. A future explicit integration should use an authenticated, permissioned API rather than extending SW1 to execute commands. No automatic Project Hub connection is claimed by this milestone.

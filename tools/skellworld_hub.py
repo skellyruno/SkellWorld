@@ -6,6 +6,8 @@ Start manually: python tools/skellworld_hub.py
 from __future__ import annotations
 import argparse
 import re
+import select
+import socket
 from collections import deque
 import socketserver
 import threading
@@ -47,6 +49,8 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     block_on_close = False
 
     def __init__(self, address=("127.0.0.1", PORT)):
+        if address[0] != "127.0.0.1":
+            raise ValueError("SW1 hub must bind IPv4 loopback only")
         super().__init__(address, WorldHandler)
         self.guard = threading.Lock()
         self.peers = {}
@@ -103,12 +107,14 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             self.send_many(others, encode("PEER", was[0], was[1], "offline"))
 
     def send_many(self, peers, frame):
-        # Never hold the peer map lock during blocking socket writes.
+        # A peer serializes complete frames. A stalled reader must not freeze
+        # other local plugin instances or hold the shared registry lock.
         for peer in peers:
-            try:
-                peer.request.sendall(frame)
-            except (OSError, TimeoutError):
-                pass
+            if not peer.send_frame(frame):
+                try:
+                    peer.request.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
 
     def broadcast(self, origin, frame):
         with self.guard:
@@ -116,6 +122,36 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         self.send_many(receivers, frame)
 
 class WorldHandler(socketserver.BaseRequestHandler):
+    # Each incoming socket has one shared write lock, including welcome,
+    # snapshots, broadcast messages, and disconnect notifications.
+    # Never take the server registry guard while holding a network write.
+    def setup(self):
+        super().setup()
+        self._write_guard = threading.Lock()
+
+    def _write_locked(self, frame):
+        deadline = time.monotonic() + 0.25
+        remaining = memoryview(frame)
+        try:
+            while remaining:
+                timeout = deadline - time.monotonic()
+                if timeout <= 0:
+                    return False
+                _, writable, _ = select.select([], [self.request], [], timeout)
+                if not writable:
+                    return False
+                sent = self.request.send(remaining)
+                if sent <= 0:
+                    return False
+                remaining = remaining[sent:]
+            return True
+        except (OSError, ValueError):
+            return False
+
+    def send_frame(self, frame):
+        with self._write_guard:
+            return self._write_locked(frame)
+
     def handle(self):
         # Require HELLO promptly; an established local plugin may idle for hours.
         self.request.settimeout(3.0)
@@ -144,16 +180,25 @@ class WorldHandler(socketserver.BaseRequestHandler):
                     if ident is None:
                         if kind != "HELLO":
                             break
-                        existing = self.server.register(self, who, topic, value)
-                        if existing is None:
-                            self.request.sendall(encode("ERROR", "hub", "status", "capacity_or_duplicate"))
+                        # Serialize the handshake with any concurrent join.
+                        # Only preexisting peers get the new online announcement,
+                        # eliminating duplicate peer counts during simultaneous joins.
+                        with self._write_guard:
+                            existing = self.server.register(self, who, topic, value)
+                            if existing is None:
+                                self._write_locked(encode("ERROR", "hub", "status", "capacity_or_duplicate"))
+                                break
+                            ident, product = who, topic
+                            self.request.settimeout(None)  # established idle clients stay connected
+                            ready = self._write_locked(encode("WELCOME", "hub", "status", "connected"))
+                            for _peer, (pident, pproduct, _display) in existing:
+                                if not ready:
+                                    break
+                                ready = self._write_locked(encode("PEER", pident, pproduct, "online"))
+                        if not ready:
                             break
-                        ident, product = who, topic
-                        self.request.settimeout(None)  # idle links stay connected
-                        self.request.sendall(encode("WELCOME", "hub", "status", "connected"))
-                        for peer, (pident, pproduct, _display) in existing:
-                            self.request.sendall(encode("PEER", pident, pproduct, "online"))
-                        self.server.broadcast(self, encode("PEER", ident, product, "online"))
+                        self.server.send_many([peer for peer, _info in existing],
+                                              encode("PEER", ident, product, "online"))
                         continue
                     if who != ident:  # no spoofing another live socket identity
                         break
@@ -175,6 +220,7 @@ def main():
     parser.add_argument("--port", type=int, default=PORT)
     parser.add_argument("--dashboard-port", type=int, default=48674)
     parser.add_argument("--no-dashboard", action="store_true", help="disable read-only local web console")
+    parser.add_argument("--open-browser", action="store_true", help="open the local console in your default browser")
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("port must be between 1024 and 65535")
@@ -196,6 +242,9 @@ def main():
             if console is not None:
                 print(f"SkellWorld dashboard: http://127.0.0.1:{args.dashboard_port}", flush=True)
             print("Opt-in informational events only. Ctrl+C to exit.", flush=True)
+            if console is not None and args.open_browser:
+                import webbrowser
+                webbrowser.open(f"http://127.0.0.1:{args.dashboard_port}", new=1)
             server.serve_forever(poll_interval=0.2)
         except KeyboardInterrupt:
             pass

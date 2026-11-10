@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
       - name: Configure
         run: cmake -S . -B build -A x64
       - name: Build
@@ -30,7 +30,7 @@ jobs:
           $plugin = Get-ChildItem -Path build -Directory -Recurse -Filter '*.vst3' | Select-Object -First 1
           if (-not $plugin) { throw 'VST3 bundle missing' }
           Compress-Archive -Path $plugin.FullName -DestinationPath SkellCore-Template-Windows-VST3.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           retention-days: 1
           name: SkellCore-Template-Windows-VST3
@@ -43,7 +43,7 @@ jobs:
           $app = Get-ChildItem -Path build -File -Recurse -Filter 'Skell Quickstart.exe' | Select-Object -First 1
           if (-not $app) { throw 'Skell Quickstart standalone executable missing' }
           Compress-Archive -Path $app.FullName -DestinationPath SkellCore-Template-Windows-Standalone.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           retention-days: 1
           name: SkellCore-Template-Windows-Standalone
