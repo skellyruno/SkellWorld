@@ -39,12 +39,22 @@
         <section class="panel live">
           <div class="panel-heading"><div><span class="eyebrow green">LIVE CONNECTIONS</span><h3>Connected plugins</h3></div><span class="pill" id="live-count">0 LIVE</span></div>
           <div id="peers" class="peer-list"><div class="empty"><div class="empty-icon">◎</div><strong>Looking for plugins</strong><p>Run the hub, then click JOIN WORLD in a compatible plugin.</p></div></div>
+          <div id="inspector" class="inspector" aria-label="Selected plugin details">
+            <span class="eyebrow">INSTANCE INSPECTOR</span>
+            <p class="muted">Select a connected plugin to inspect its session and recent informational activity.</p>
+          </div>
         </section>
         <section class="panel activity">
-          <div class="panel-heading"><div><span class="eyebrow green">INFORMATIONAL BUS</span><h3>World activity</h3></div><span class="pill">READ ONLY</span></div>
+          <div class="panel-heading"><div><span class="eyebrow green">INFORMATIONAL BUS</span><h3>World activity</h3></div><button id="show-all-activity" class="pill activity-reset" type="button">SHOW ALL</button></div>
           <div id="events" class="event-list"><p class="muted">Waiting for plugin activity…</p></div>
         </section>
       </div>
+      <section class="panel companions-panel">
+        <div class="panel-heading"><div><span class="eyebrow green">ONE ECOSYSTEM, SEPARATE APPS</span><h3>SKELL workspaces</h3><p>Read-only discovery today; no automatic installation, launching, or privileged commands.</p></div><span class="pill">INTEGRATION MAP</span></div>
+        <div id="companions" class="companion-grid">
+          <p class="muted">Loading workspaces…</p>
+        </div>
+      </section>
       <section class="panel catalog-panel">
         <div class="panel-heading"><div><span class="eyebrow green">ECOSYSTEM DIRECTORY</span><h3>Skell catalog</h3><p>Inventory only. Listed plugins are not necessarily installed or connected.</p></div><span class="pill">ADOPTION ROADMAP</span></div>
         <div class="catalog-tools">

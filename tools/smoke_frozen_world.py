@@ -69,6 +69,12 @@ def smoke(executable):
         if len(catalog["plugins"]) < 20:
             raise AssertionError("missing packaged catalog")
         with urllib.request.urlopen(
+                f"http://127.0.0.1:{dash_port}/api/apps", timeout=3) as response:
+            apps = json.load(response)
+        if (apps.get("schema") != "skellworld-apps/1" or
+                not any(a.get("id") == "uno.skellyr.projecthub" for a in apps["apps"])):
+            raise AssertionError("missing packaged Project Hub companion registry")
+        with urllib.request.urlopen(
                 f"http://127.0.0.1:{dash_port}/", timeout=3) as response:
             if b"tuning-panel" not in response.read():
                 raise AssertionError("missing packaged web assets")

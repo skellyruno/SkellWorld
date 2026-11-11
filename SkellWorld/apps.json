@@ -1,0 +1,23 @@
+{
+  "schema": "skellworld-apps/1",
+  "apps": [
+    {
+      "id": "uno.skellyr.projecthub",
+      "name": "SKELL Project Hub",
+      "mode": "developer",
+      "repository": "skellyruno/skell-project-hub",
+      "integration": "read-only-console-discovery",
+      "description": "Independent developer workspace for GitHub projects, builds, and releases.",
+      "status": "read-only discovery available"
+    },
+    {
+      "id": "uno.skellyr.skellyhub",
+      "name": "SkellyHub",
+      "mode": "creator",
+      "repository": null,
+      "integration": "planned",
+      "description": "Customer-facing plugin and preset management experience.",
+      "status": "future integration"
+    }
+  ]
+}

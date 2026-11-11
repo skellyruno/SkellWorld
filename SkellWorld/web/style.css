@@ -45,3 +45,22 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .tuning-scale{min-width:210px}.tuning-notes{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:28px}.note-pill{font-size:11px;color:#d7f8c3;background:#2b462c;border:1px solid #52734c;border-radius:6px;padding:4px 6px;font-weight:750}
 @media(max-width:900px){.tuning-data{gap:20px}.tuning-panel{align-items:start}.tuning-scale{min-width:170px}}
 @media(max-width:650px){.tuning-panel{padding:18px}.tuning-data{width:100%;gap:16px;justify-content:flex-start}.tuning-scale{width:100%}.tuning-item strong{font-size:19px}}
+
+/* Instance inspector: informational only; no remote plugin control. */
+.peer-button{width:100%;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.peer-button:hover{background:#223629;border-color:#688956}
+.peer-button:focus-visible{outline:2px solid #b1ff7f;outline-offset:2px}
+.peer-selected{border-color:#a0eb76;background:#213b27}
+.inspector{margin-top:18px;padding:16px 17px;background:#0d1911;border:1px solid #34523c;border-radius:11px;min-height:106px}
+.inspector .eyebrow{font-size:9px}.inspector-name{display:block;margin:8px 0;font-size:16px;color:#d6f9c7}
+.inspector-id{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#91ae96;overflow-wrap:anywhere;margin:8px 0}
+.inspector-clear{background:transparent;border:1px solid #51794d;color:#a5ed84;padding:8px 12px;border-radius:8px;font-weight:800;font-size:10px;cursor:pointer}
+.inspector-clear:hover{background:#1f3323}.inspector-clear:focus-visible{outline:2px solid #b1ff7f;outline-offset:2px}
+.activity-reset{cursor:pointer}.activity-reset:focus-visible{outline:2px solid #b1ff7f;outline-offset:2px}
+.companions-panel{margin-top:18px;min-height:220px}.companion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.companion-card{border:1px solid #32503a;border-radius:12px;background:#14221a;padding:20px;min-width:0}
+.companion-name{display:block;color:#ebfce3;font-size:19px;margin:10px 0}
+.companion-card p{font-size:12px;line-height:1.7}.companion-status{font-size:10px!important;letter-spacing:.2px;color:#b0e68a}
+.companion-link{display:inline-flex;text-decoration:none;font-size:10px;letter-spacing:1px;font-weight:800;margin-top:8px;color:#adff79;border:1px solid #4e7d43;padding:10px 13px;border-radius:8px}
+.companion-link:hover{background:#28452c}.companion-link:focus-visible{outline:2px solid #b1ff7f;outline-offset:2px}
+@media(max-width:650px){.companion-grid{grid-template-columns:1fr}}

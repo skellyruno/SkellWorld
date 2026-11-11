@@ -116,8 +116,16 @@ def run_window(world, gui_exit_smoke=None):
     root.report_callback_exception = on_callback_error
 
     def schedule(delay_ms, callback):
-        if not closing:
-            pending_callbacks.append(root.after(delay_ms, callback))
+        if closing:
+            return
+        handle = [None]
+        def invoke():
+            if handle[0] in pending_callbacks:
+                pending_callbacks.remove(handle[0])
+            if not closing:
+                callback()
+        handle[0] = root.after(delay_ms, invoke)
+        pending_callbacks.append(handle[0])
 
     exit_button = tk.Button(actions, text="EXIT SKELLWORLD", command=close_window,
               font=("Segoe UI", 9, "bold"), bg="#1b2a21", fg="#cde7cb",
