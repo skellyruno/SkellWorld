@@ -16,7 +16,7 @@ import time
 PORT = 48673
 MAX_CLIENTS = 32
 MAX_WIRE = 256
-TOPICS = {"theme", "preset.name", "transport.bpm", "transport.playing", "meter.peak"}
+TOPICS = {"theme", "preset.name", "transport.bpm", "transport.playing", "meter.peak", "musical.key"}
 IDENT = re.compile(r"^[A-Za-z0-9_.-]{1,47}$")
 VALUE = re.compile(r"^[\x20-\x7e]{1,95}$")
 KINDS = {"HELLO", "WELCOME", "PEER", "EVENT", "BYE", "ERROR"}
@@ -203,6 +203,14 @@ class WorldHandler(socketserver.BaseRequestHandler):
                     if who != ident:  # no spoofing another live socket identity
                         break
                     if kind == "EVENT" and topic in TOPICS:
+                        if topic == "musical.key":
+                            # Only a registered SkellKey peer may publish a
+                            # canonical C..B major/minor suggestion.
+                            with self.server.guard:
+                                registered = self.server.peers.get(self)
+                            if (registered is None or registered[1] != "skell.key" or
+                                re.fullmatch(r"(?:[0-9]|1[01])\.[01]", value) is None):
+                                break
                         self.server.record_event(self, topic, value)
                         self.server.broadcast(self, encode("EVENT", ident, topic, value))
                     elif kind == "BYE":

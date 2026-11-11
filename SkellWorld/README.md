@@ -97,3 +97,9 @@ The dashboard stops polling while its browser tab is hidden and avoids recreatin
 Validation includes concurrent peer-registration and simultaneous informational-event regression tests, plus HTML endpoint tests and a JavaScript syntax check. The SW1 protocol is still informational only and has no authentication: do not add privileged control or any user file access.
 
 **Developer Mode / Project Hub:** Project Hub is a separate product and repository. A future explicit integration should use an authenticated, permissioned API rather than extending SW1 to execute commands. No automatic Project Hub connection is claimed by this milestone.
+
+## SkellKey + SkellyTune live key/scale bridge
+
+The dashboard/hub accepts the bounded informational `SW1|EVENT|<instance>|musical.key|<root>.<mode>` event only from a peer registered as `skell.key`, with root 0..11 (C..B) and mode 0=major or 1=natural minor. SkellyTune follows only when the user explicitly joins the World and selects **FOLLOW SKELLKEY**. Follow affects its temporary correction mask, not the saved key, scale, or custom note mask. Key publishes stable detections from its JUCE UI timer; no audio is transported.
+
+This local v1 protocol is **not authenticated**. It offers no arbitrary command/parameter/preset updates. Real remote control needs authenticated source consent and separate safety review. The hub's read-only dashboard can show the informational musical-key event history.
