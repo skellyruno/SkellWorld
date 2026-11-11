@@ -103,3 +103,7 @@ Validation includes concurrent peer-registration and simultaneous informational-
 The dashboard/hub accepts the bounded informational `SW1|EVENT|<instance>|musical.key|<root>.<mode>` event only from a peer registered as `skell.key`, with root 0..11 (C..B) and mode 0=major or 1=natural minor. SkellyTune follows only when the user explicitly joins the World and selects **FOLLOW SKELLKEY**. Follow affects its temporary correction mask, not the saved key, scale, or custom note mask. Key publishes stable detections from its JUCE UI timer; no audio is transported.
 
 This local v1 protocol is **not authenticated**. It offers no arbitrary command/parameter/preset updates. Real remote control needs authenticated source consent and separate safety review. The hub's read-only dashboard can show the informational musical-key event history.
+
+## Integrated source repositories (Nov 2026 pilot)
+
+SkellKey (`skell-key-vst`) publishes validated detected major/minor keys as `skell.key`; SkellyTune mini (`skelltune-mini`) can follow as `skell.tune` after explicit opt-in. Both have four shared skull-click skins from SkellCore v0.6. Their Windows VST3 CI and GUI checks are tracked in their own repositories. **Real FL Studio two-plugin linking remains to be tested manually**; the registry marks that source code is integrated, not that a host session has been certified.

@@ -39,11 +39,16 @@
     },
     {
       "repository": "skellyruno/skell-key-vst",
-      "product_id": null,
-      "integration": "planned",
+      "product_id": "skell.key",
+      "integration": "world-enabled",
       "vst3_code": "TnRc",
       "bundle_id": "audio.independent.tonic-recreation",
-      "display_name": "TONIC-inspired"
+      "display_name": "TONIC-inspired",
+      "capabilities": [
+        "presence",
+        "musical-key-source",
+        "skull-skins"
+      ]
     },
     {
       "repository": "skellyruno/skell-vst-template",
@@ -143,11 +148,30 @@
     },
     {
       "repository": "skellyruno/skelltune-mini",
-      "product_id": null,
-      "integration": "planned",
+      "product_id": "skell.tune",
+      "integration": "world-enabled",
       "vst3_code": null,
       "bundle_id": null,
-      "display_name": null
+      "display_name": null,
+      "capabilities": [
+        "presence",
+        "musical-key-follow",
+        "skull-skins"
+      ],
+      "variants": [
+        {
+          "code": "SkRT",
+          "bundle_id": "com.skelly.realtimetune"
+        },
+        {
+          "code": "SkST",
+          "bundle_id": "com.skelly.studiotune"
+        },
+        {
+          "code": "SkSF",
+          "bundle_id": "com.skelly.studiotunefast"
+        }
+      ]
     },
     {
       "repository": "skellyruno/skell-necromancer-vst",
