@@ -19,6 +19,17 @@
         <div><span class="eyebrow green">THE LOCAL CONNECTION LAYER</span><h2>Your plugins.<br><span>One world.</span></h2><p>See which SKELL plugins have joined, follow informational activity, and explore the ecosystem in one place. Audio processing stays in your DAW.</p></div>
         <div class="orbit" aria-hidden="true"><div class="ring ring-outer"></div><div class="ring ring-inner"></div><div class="center-mark">S<span>W</span></div><i class="orbit-dot d1"></i><i class="orbit-dot d2"></i><i class="orbit-dot d3"></i></div>
       </section>
+      <section class="tuning-panel" aria-label="Skell Key live tuning">
+        <div class="tuning-heading">
+          <div class="tuning-badge">KEY / SCALE / A4</div>
+          <div><strong>Skell Key Link</strong><p id="tuning-status">Waiting for a connected Skell Key signal</p></div>
+        </div>
+        <div class="tuning-data">
+          <div class="tuning-item"><small>KEY</small><strong id="tuning-key">—</strong></div>
+          <div class="tuning-item"><small>A4 REFERENCE</small><strong id="tuning-a4">—</strong></div>
+          <div class="tuning-item tuning-scale"><small>ACTIVE NOTES</small><div id="tuning-notes" class="tuning-notes"><span>Awaiting scale data</span></div></div>
+        </div>
+      </section>
       <section class="stats" aria-label="Hub statistics">
         <div class="stat"><span>ACTIVE INSTANCES</span><strong id="instance-count">—</strong><small>Joined voluntarily</small></div>
         <div class="stat"><span>CATALOG PRODUCTS</span><strong id="catalog-count">—</strong><small>Known repositories</small></div>
@@ -40,7 +51,7 @@
           <label class="catalog-search"><span class="visually-hidden">Search SKELL products</span><input id="catalog-search" type="search" autocomplete="off" placeholder="Search products or repositories…" aria-label="Search products"></label>
           <div class="catalog-filters" role="group" aria-label="Catalog integration status">
             <button class="filter-btn selected" type="button" data-filter="all" aria-pressed="true">All</button>
-            <button class="filter-btn" type="button" data-filter="world-demo" aria-pressed="false">World demo</button>
+            <button class="filter-btn" type="button" data-filter="world-enabled" aria-pressed="false">World enabled</button><button class="filter-btn" type="button" data-filter="world-demo" aria-pressed="false">Demo</button>
             <button class="filter-btn" type="button" data-filter="shared-core-only" aria-pressed="false">Core only</button>
             <button class="filter-btn" type="button" data-filter="planned" aria-pressed="false">Planned</button>
           </div>

@@ -36,3 +36,12 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .catalog-card:focus-within{border-color:#acfc7b}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:650px){.catalog-tools{align-items:stretch}.catalog-search{max-width:none}.filter-btn{padding:9px 10px}.catalog-filters{width:100%}}
+
+/* Skell Key's informational signal is visible without presenting it as remote control. */
+.tuning-panel{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;background:linear-gradient(115deg,#192b1c,#111b16);border:1px solid #466c3c;border-radius:15px;padding:22px 26px;margin-bottom:18px;box-shadow:inset 0 1px 0 #baff7b12}
+.tuning-heading{display:flex;align-items:center;gap:15px;min-width:230px}.tuning-badge{height:45px;min-width:53px;padding:0 7px;border-radius:10px;background:#28462a;border:1px solid #659b52;color:#c0ff94;display:grid;place-items:center;font-size:8px;line-height:1.5;font-weight:900;text-align:center;letter-spacing:1px}
+.tuning-heading strong{font-size:15px}.tuning-heading p{margin:5px 0 0;color:#9ab0a0;font-size:11px;line-height:1.5}
+.tuning-data{display:flex;align-items:center;gap:32px;flex-wrap:wrap}.tuning-item{display:flex;flex-direction:column;gap:6px;min-width:95px}.tuning-item small{letter-spacing:1.7px;font-size:9px;font-weight:800;color:#809b87}.tuning-item strong{font-size:22px;color:#c0ff8d;white-space:nowrap}
+.tuning-scale{min-width:210px}.tuning-notes{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:28px}.note-pill{font-size:11px;color:#d7f8c3;background:#2b462c;border:1px solid #52734c;border-radius:6px;padding:4px 6px;font-weight:750}
+@media(max-width:900px){.tuning-data{gap:20px}.tuning-panel{align-items:start}.tuning-scale{min-width:170px}}
+@media(max-width:650px){.tuning-panel{padding:18px}.tuning-data{width:100%;gap:16px;justify-content:flex-start}.tuning-scale{width:100%}.tuning-item strong{font-size:19px}}
