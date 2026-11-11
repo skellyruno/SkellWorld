@@ -4,7 +4,7 @@ The SkellCore headless renderer creates PNGs from a plugin's **actual JUCE edito
 
 ## Reuse in any Skell plugin
 
-Pin a commit of `skellyruno/skell-vst-template` as the SkellCore dependency (e.g. via CMake FetchContent with `SOURCE_SUBDIR SkellCore`), and link a test executable with `SkellCore::UIRenderer`. That executable must use the plugin's *real* processor and editor sources or link its existing SharedCode target.
+Pin a commit of `skellyruno/skellcore-vst-template` as the SkellCore dependency (e.g. via CMake FetchContent with `SOURCE_SUBDIR SkellCore`), and link a test executable with `SkellCore::UIRenderer`. That executable must use the plugin's *real* processor and editor sources or link its existing SharedCode target.
 
 ```cpp
 #include <SkellCore/HeadlessUIRenderer.h>

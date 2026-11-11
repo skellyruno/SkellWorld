@@ -16,7 +16,7 @@ The catalog is a roadmap, **not** a claim that all listed products are installed
 ## Separate SKELL repositories
 
 - **SkellWorld:** local presence protocol, hub, read-only dashboard and ecosystem integration contracts.
-- **SkellCore:** maintained separately at [skell-vst-template](https://github.com/skellyruno/skell-vst-template), shared DSP, JUCE UI utilities and compatible demo sources.
+- **SkellCore:** maintained separately at [skellcore-vst-template](https://github.com/skellyruno/skellcore-vst-template), shared DSP, JUCE UI utilities and compatible demo sources.
 - **Project Hub:** separately maintained developer workspace. Future integration must use explicit consent and a permissioned API, not remote commands added to the SW1 informational protocol.
 - **Individual plugin repos:** own their VST3 identities, audio code and presets. Opt-in additions must preserve host automation and saved FL Studio projects.
 
@@ -84,13 +84,13 @@ Copy `SkellCore/` into your monorepo, or FetchContent the **immutable commit** o
 ```cmake
 include(FetchContent)
 FetchContent_Declare(SkellCore
-  GIT_REPOSITORY https://github.com/skellyruno/skell-vst-template.git
+  GIT_REPOSITORY https://github.com/skellyruno/skellcore-vst-template.git
   GIT_TAG <IMMUTABLE_COMMIT_SHA>
   SOURCE_SUBDIR SkellCore)
 FetchContent_MakeAvailable(SkellCore)
 target_link_libraries(MyPlugin PRIVATE SkellCore::DSP SkellCore::UI)
 ```
-Replace `MyPlugin` with the JUCE target. Once the repository itself is renamed on GitHub, update the URL to `skellcore-vst-template` while pinning the immutable revision. Repositories renamed by GitHub redirect old clones but new URLs should be adopted in each plugin.
+Replace `MyPlugin` with the JUCE target. The SkellCore repository has now been renamed. Use `skellyruno/skellcore-vst-template` for new builds, with an immutable, tested commit pin; the former URL only redirects for backwards compatibility.
 
 ## Integration APIs
 ```cpp
@@ -115,4 +115,4 @@ This is **v0.3 shared-core work**. Source import does not automatically migrate 
 - Choir: links pinned SkellCore target on separate PR; current sound unchanged.
 - AdlibLab / Silence Designer / other new plugins: opt in as their CMake projects are ready.
 
-See [SkellCore/README.md](SkellCore/README.md) and [GitHub migration tracker](https://github.com/skellyruno/skell-vst-template/issues/2).
+See [SkellCore/README.md](SkellCore/README.md) and [GitHub migration tracker](https://github.com/skellyruno/skellcore-vst-template/issues/2).

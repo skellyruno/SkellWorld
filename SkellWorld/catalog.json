@@ -2,7 +2,7 @@
   "schema": "skellworld-catalog/1",
   "world": "SKELL",
   "source": "User-owned GitHub SKELL repositories; catalog is an inventory, not proof of connectivity",
-  "core": "skellyruno/skell-vst-template",
+  "core": "skellyruno/skellcore-vst-template",
   "transport": "opt-in localhost only",
   "plugins": [
     {
@@ -51,7 +51,7 @@
       ]
     },
     {
-      "repository": "skellyruno/skell-vst-template",
+      "repository": "skellyruno/skellcore-vst-template",
       "product_id": "skellcore.quickstart",
       "integration": "world-demo",
       "vst3_code": "Sk01",
