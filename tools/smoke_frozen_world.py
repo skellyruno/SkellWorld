@@ -111,10 +111,13 @@ def smoke(executable):
     # application has been destroyed". Test the actual frozen GUI process
     # through both exit actions, not only its headless TCP service mode.
     for action in ("button", "window"):
+        ui_port, ui_dash_port = available_port(), available_port()
+        while ui_port == ui_dash_port:
+            ui_dash_port = available_port()
         result = subprocess.run(
             [str(exe), "--gui-exit-smoke", action,
-             "--port", str(available_port()),
-             "--dashboard-port", str(available_port())],
+             "--port", str(ui_port),
+             "--dashboard-port", str(ui_dash_port)],
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, creationflags=flags,
             timeout=35, check=False)
