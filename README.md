@@ -4,14 +4,16 @@ SkellWorld is the **local-first connection layer** for SKELL audio software. It 
 
 ## Run SkellWorld
 
-On Windows, run `Start-SkellWorld.bat` (Python 3 required). It opens the local dashboard:
+**Windows (recommended):** Open [GitHub Actions](https://github.com/skellyruno/SkellWorld/actions/workflows/world-portable.yml), select a successful **SkellWorld portable Windows application** run, and download the **SkellWorld-Windows-Portable** artifact. Extract `SkellWorld-Windows-Portable.zip` inside it, then double-click `SkellWorld.exe`. Python is **not required**. The compact desktop launcher opens the web dashboard and has an **EXIT SKELLWORLD** button.
 
-**http://127.0.0.1:48674** — read-only console  
+**Source/developer mode:** Double-click `Start-SkellWorld.bat` (requires Python 3) or run `python tools/skellworld_hub.py --open-browser`.
+
+**http://127.0.0.1:48674** — read-only dashboard  
 **127.0.0.1:48673** — opt-in informational plugin bus
 
-Or run `python tools/skellworld_hub.py` and open the dashboard address manually.
+Skell Key and SkellyTune have existing source-code WorldLink integrations; the dashboard shows live key, scale, and A4 data when a compatible Skell Key instance joins the hub. **Real two-plugin FL Studio validation is still required.** The catalog is an inventory, not an installed-plugin scanner.
 
-The catalog is a roadmap, **not** a claim that all listed products are installed or connected. The demo Quickstart plugin in this checkout is the currently connected integration example.
+See [Windows portable guide](docs/WINDOWS_PORTABLE.md) and [SkellWorld integration guide](SkellWorld/README.md).
 
 ## Separate SKELL repositories
 
