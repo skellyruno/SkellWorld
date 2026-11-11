@@ -146,6 +146,40 @@ class WorldHubTests(unittest.TestCase):
         key.sendall(hub.encode("EVENT","key-01","musical.key","12.0"))
         self.assertEqual(hub.decode(tf.readline(256))[:2], ["PEER","key-01"])
 
+    def test_live_full_tuning_snapshot_and_disconnect(self):
+        key, keyfile = self.peer("live-key", "skell.key")
+        tune, tunefile = self.peer("live-tune", "skell.tune")
+        tunefile.readline(256); keyfile.readline(256)
+        key.sendall(hub.encode("EVENT","live-key","musical.key","4.1"))
+        self.assertEqual(hub.decode(tunefile.readline(256))[:3],
+                         ["EVENT","live-key","musical.key"])
+        preliminary=self.server.snapshot()["tuning"]
+        self.assertEqual((preliminary["root"],preliminary["mode"],preliminary["a4_hz"]),
+                         (4,1,None))
+        key.sendall(hub.encode("EVENT","live-key","musical.tuning","4,1,2773,432500"))
+        self.assertEqual(hub.decode(tunefile.readline(256))[:3],
+                         ["EVENT","live-key","musical.tuning"])
+        complete=self.server.snapshot()["tuning"]
+        self.assertEqual((complete["root"],complete["mode"],complete["scale_mask"],
+                          complete["a4_hz"]),(4,1,2773,432.5))
+        # The older key-only fallback event must never erase scale/A4.
+        key.sendall(hub.encode("EVENT","live-key","musical.key","4.1"))
+        tunefile.readline(256)
+        self.assertEqual(self.server.snapshot()["tuning"]["scale_mask"],2773)
+        key.sendall(hub.encode("BYE","live-key","skell.key","offline"))
+        self.assertEqual(hub.decode(tunefile.readline(256))[:2],["PEER","live-key"])
+        self.assertIsNone(self.server.snapshot()["tuning"])
+
+    def test_spoofed_tuning_never_reaches_dashboard(self):
+        wrong, wrongfile = self.peer("pretender","skell.tune")
+        observer, observerfile = self.peer("observer","skell.eq")
+        observerfile.readline(256); wrongfile.readline(256)
+        wrong.sendall(hub.encode("EVENT","pretender","musical.tuning",
+                                 "4,1,2773,432500"))
+        self.assertEqual(hub.decode(observerfile.readline(256))[:2],
+                         ["PEER","pretender"])
+        self.assertIsNone(self.server.snapshot()["tuning"])
+
     def test_loopback_only(self):
         self.assertEqual(self.server.server_address[0],"127.0.0.1")
         with self.assertRaises(ValueError):

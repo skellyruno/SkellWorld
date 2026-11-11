@@ -60,6 +60,18 @@ class DashboardTests(unittest.TestCase):
         self.world.unregister(participant)
         self.assertEqual(json.loads(self.request()[1])["events"][-1]["kind"], "leave")
 
+    def test_status_contains_read_only_skell_tuning(self):
+        peer = object()
+        self.world.register(peer, "key-01", "skell.key", "Skell Key")
+        self.world.record_event(peer, "musical.tuning", "7,0,2741,440000")
+        status, raw, _ = self.request()
+        self.assertEqual(status, 200)
+        data = json.loads(raw)
+        self.assertEqual(data["tuning"]["root"], 7)
+        self.assertEqual(data["tuning"]["a4_hz"], 440.0)
+        self.world.unregister(peer)
+        self.assertIsNone(json.loads(self.request()[1])["tuning"])
+
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
