@@ -117,6 +117,27 @@ class WorldHubTests(unittest.TestCase):
         tuner.sendall(hub.encode("EVENT", "tuner-01", "musical.key", "0.0"))
         self.assertEqual(hub.decode(kf.readline(256))[:2], ["PEER", "tuner-01"])
 
+    def test_full_skell_key_tuning_broadcast(self):
+        sender, sf = self.peer("key-01", "skell.key")
+        receiver, rf = self.peer("tune-01", "skell.tune")
+        rf.readline(256); sf.readline(256)
+        sender.sendall(hub.encode("EVENT", "key-01", "musical.tuning",
+                                 "4,1,2773,432500"))
+        self.assertEqual(hub.decode(rf.readline(256)),
+                         ["EVENT", "key-01", "musical.tuning",
+                          "4,1,2773,432500"])
+        receiver.sendall(hub.encode("EVENT", "tune-01", "musical.tuning",
+                                   "4,1,2773,432500"))
+        self.assertEqual(hub.decode(sf.readline(256))[:2], ["PEER", "tune-01"])
+
+    def test_invalid_full_tuning_rejected(self):
+        sender, sf = self.peer("key-01", "skell.key")
+        receiver, rf = self.peer("tune-01", "skell.tune")
+        rf.readline(256); sf.readline(256)
+        sender.sendall(hub.encode("EVENT", "key-01", "musical.tuning",
+                                 "4,1,1,432500"))  # E missing from mask
+        self.assertEqual(hub.decode(rf.readline(256))[:2], ["PEER", "key-01"])
+
     def test_reject_invalid_musical_key(self):
         key,kf = self.peer("key-01","skell.key")
         tune,tf = self.peer("tune-01","skell.tune")

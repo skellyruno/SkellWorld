@@ -16,7 +16,8 @@ import time
 PORT = 48673
 MAX_CLIENTS = 32
 MAX_WIRE = 256
-TOPICS = {"theme", "preset.name", "transport.bpm", "transport.playing", "meter.peak", "musical.key"}
+TOPICS = {"theme", "preset.name", "transport.bpm", "transport.playing",
+          "meter.peak", "musical.key", "musical.tuning"}
 IDENT = re.compile(r"^[A-Za-z0-9_.-]{1,47}$")
 VALUE = re.compile(r"^[\x20-\x7e]{1,95}$")
 KINDS = {"HELLO", "WELCOME", "PEER", "EVENT", "BYE", "ERROR"}
@@ -203,14 +204,30 @@ class WorldHandler(socketserver.BaseRequestHandler):
                     if who != ident:  # no spoofing another live socket identity
                         break
                     if kind == "EVENT" and topic in TOPICS:
-                        if topic == "musical.key":
-                            # Only a registered SkellKey peer may publish a
-                            # canonical C..B major/minor suggestion.
+                        if topic in {"musical.key", "musical.tuning"}:
+                            # No commands or untrusted key updates. Only a
+                            # registered skell.key peer may publish tuning.
                             with self.server.guard:
                                 registered = self.server.peers.get(self)
-                            if (registered is None or registered[1] != "skell.key" or
-                                re.fullmatch(r"(?:[0-9]|1[01])\.[01]", value) is None):
+                            if registered is None or registered[1] != "skell.key":
                                 break
+                            if topic == "musical.key":
+                                if re.fullmatch(r"(?:[0-9]|1[01])\.[01]", value) is None:
+                                    break
+                            else:
+                                # SkellCore/WorldTuning.h wire format:
+                                # root,mode,absolute-pitch-mask,A4-in-millihertz.
+                                fields = value.split(",")
+                                if len(fields) != 4 or any(
+                                        not field.isascii() or not field.isdecimal()
+                                        or (len(field) > 1 and field[0] == "0")
+                                        for field in fields):
+                                    break
+                                root, mode, mask, a4 = map(int, fields)
+                                if not (0 <= root <= 11 and 0 <= mode <= 1
+                                        and 1 <= mask <= 4095 and (mask & (1 << root))
+                                        and 400000 <= a4 <= 480000):
+                                    break
                         self.server.record_event(self, topic, value)
                         self.server.broadcast(self, encode("EVENT", ident, topic, value))
                     elif kind == "BYE":
