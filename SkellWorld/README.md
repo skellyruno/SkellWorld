@@ -115,3 +115,11 @@ The dashboard now displays the latest **validated informational** Skell Key key,
 A new `tools/skellworld_desktop.py` launcher owns both local listeners and opens the browser-based dashboard. It has visible **Open Dashboard** and **Exit SkellWorld** buttons and uses a small native Tk interface, not an extra Chromium runtime. The Windows one-file packaged executable includes the Python runtime and assets, so customers do **not** need to install Python. Bundled resource paths are handled explicitly through PyInstaller's `_MEIPASS`.
 
 GitHub Actions builds a Windows portable ZIP, starts the packaged executable in headless smoke mode, checks both local endpoints, and exchanges a real SW1 musical tuning frame. A successful Python source test does not by itself confirm the packaged executable or FL Studio VST3 behavior; check the separate job results.
+
+## Connection inspector and Project Hub directory
+
+Click a joined plugin in **Connected plugins** to see the session identifier, stable product ID, and recent informational activity. Click **Clear selection** or **Show all** to restore the unfiltered feed. The inspector never modifies a plugin or sends SW1 commands.
+
+`/api/apps` is a static, read-only registry of companion applications. It records **SKELL Project Hub** as an independent Developer Mode application using `skellworld-app/1` read-only console discovery and **SkellyHub** as a planned Creator Mode integration. Registered applications are **not necessarily installed or running**. Only the canonical GitHub repository link is exposed; local executable launching and user file access are not enabled.
+
+The Windows launcher exit path is explicitly covered by a packaged executable test for both **EXIT SKELLWORLD** and title-bar close.

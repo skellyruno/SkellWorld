@@ -2,6 +2,10 @@
 
 SkellWorld is the **local-first connection layer** for SKELL audio software. It inventories known SKELL products, shows plugins that **explicitly join** the SW1 local hub, and displays non-privileged activity in a read-only desktop-browser console. It does **not** automatically discover or modify installed plugins.
 
+## Current milestone — safer shutdown and ecosystem workspaces
+
+This update fixes the Windows **Exit SkellWorld** / title-bar **X** crash and tests both shutdown paths against the actual packaged EXE. The console adds a connected-instance inspector and read-only **Developer Mode** discovery for [SKELL Project Hub](https://github.com/skellyruno/skell-project-hub). Project Hub's own app/repository and permissions remain separate; SkellWorld only links to its public repository, not its local files or executable.
+
 ## Run SkellWorld
 
 **Windows (recommended):** Open [GitHub Actions](https://github.com/skellyruno/SkellWorld/actions/workflows/world-portable.yml), select a successful **SkellWorld portable Windows application** run, and download the **SkellWorld-Windows-Portable** artifact. Extract `SkellWorld-Windows-Portable.zip` inside it, then double-click `SkellWorld.exe`. Python is **not required**. The compact desktop launcher opens the web dashboard and has an **EXIT SKELLWORLD** button.

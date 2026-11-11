@@ -107,6 +107,22 @@ def smoke(executable):
             app.kill()
             app.wait(timeout=5)
 
+    # Regression for user-reported TclError: "can't invoke winfo command:
+    # application has been destroyed". Test the actual frozen GUI process
+    # through both exit actions, not only its headless TCP service mode.
+    for action in ("button", "window"):
+        result = subprocess.run(
+            [str(exe), "--gui-exit-smoke", action,
+             "--port", str(available_port()),
+             "--dashboard-port", str(available_port())],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, creationflags=flags,
+            timeout=35, check=False)
+        if result.returncode != 0:
+            raise AssertionError(
+                f"Packaged Tk launcher exit failed via {action}: return code {result.returncode}")
+        print(f"PASS: packaged Windows GUI closed cleanly via {action}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
