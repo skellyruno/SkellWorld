@@ -52,7 +52,7 @@ class LocalWorld:
         self.threads.clear()
 
 
-def run_window(world):
+def run_window(world, gui_exit_smoke=None):
     # The launcher does not require Qt, a browser engine, or third-party GUI libs.
     import tkinter as tk
     root = tk.Tk()
@@ -90,27 +90,69 @@ def run_window(world):
               activebackground="#c7ff9f", activeforeground="#0b170b",
               relief="flat", padx=15, pady=9, cursor="hand2",
               borderwidth=0).pack(side="left", fill="x", expand=True)
-    tk.Button(actions, text="EXIT SKELLWORLD", command=root.destroy,
+    closing = False
+    pending_callbacks = []
+    callback_error = []
+
+    def close_window():
+        # A destroyed Tk interpreter cannot be queried (not even winfo_exists).
+        # Cancel pending status/browser callbacks before destroying it once.
+        nonlocal closing
+        if closing:
+            return
+        closing = True
+        for callback_id in pending_callbacks:
+            try:
+                root.after_cancel(callback_id)
+            except tk.TclError:
+                pass
+        pending_callbacks.clear()
+        root.destroy()
+
+    def on_callback_error(exc_type, exc_value, traceback):
+        callback_error.append(exc_value)
+        close_window()
+
+    root.report_callback_exception = on_callback_error
+
+    def schedule(delay_ms, callback):
+        if not closing:
+            pending_callbacks.append(root.after(delay_ms, callback))
+
+    exit_button = tk.Button(actions, text="EXIT SKELLWORLD", command=close_window,
               font=("Segoe UI", 9, "bold"), bg="#1b2a21", fg="#cde7cb",
               activebackground="#314837", activeforeground="#ffffff",
               relief="flat", padx=15, pady=10, cursor="hand2",
-              borderwidth=0).pack(side="left", padx=(10, 0))
-    root.protocol("WM_DELETE_WINDOW", root.destroy)
+              borderwidth=0)
+    exit_button.pack(side="left", padx=(10, 0))
+    root.protocol("WM_DELETE_WINDOW", close_window)
 
     def tick():
+        if closing:
+            return
         try:
             count = world.hub.snapshot()["peer_count"]
             peers.config(text=str(count) + " plugin instance" + ("" if count == 1 else "s") + " joined")
-            root.after(1000, tick)
         except tk.TclError:
+            if not closing:
+                raise
             return
+        schedule(1000, tick)
 
-    root.after(200, tick)
-    root.after(450, lambda: webbrowser.open(world.dashboard_url))
-    try:
-        root.mainloop()
-    finally:
-        root.destroy() if root.winfo_exists() else None
+    schedule(200, tick)
+    if gui_exit_smoke is None:
+        schedule(450, lambda: webbrowser.open(world.dashboard_url))
+    elif gui_exit_smoke == "button":
+        schedule(600, exit_button.invoke)  # actual button close path
+    elif gui_exit_smoke == "window":
+        schedule(600, close_window)        # same callback as the window X
+    else:
+        raise ValueError("Unknown UI smoke-test action")
+
+    # Closing the window ends mainloop. Never query Tk or destroy a second time.
+    root.mainloop()
+    if callback_error:
+        raise RuntimeError("SkellWorld UI callback failed") from callback_error[0]
 
 
 def main(argv=None):
@@ -118,6 +160,8 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=PORT)
     parser.add_argument("--dashboard-port", type=int, default=DASHBOARD_PORT)
     parser.add_argument("--smoke-test", action="store_true", help="start listeners without GUI for CI")
+    parser.add_argument("--gui-exit-smoke", choices=("button", "window"),
+                        help="run real Tk window, close via chosen UI path, and exit cleanly")
     args = parser.parse_args(argv)
     if not 1024 <= args.port <= 65535 or not 1024 <= args.dashboard_port <= 65535:
         parser.error("ports must be in the range 1024..65535")
@@ -131,7 +175,7 @@ def main(argv=None):
             # parent checks HTTP and then terminates this temporary process.
             threading.Event().wait()
         else:
-            run_window(world)
+            run_window(world, gui_exit_smoke=args.gui_exit_smoke)
     finally:
         world.stop()
 
