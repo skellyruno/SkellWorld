@@ -4,8 +4,10 @@ from __future__ import annotations
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+# PyInstaller's one-file Windows binary extracts bundled assets under _MEIPASS.
+ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[1]))
 WEB = ROOT / "SkellWorld" / "web"
 CATALOG = ROOT / "SkellWorld" / "catalog.json"
 

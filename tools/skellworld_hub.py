@@ -58,6 +58,7 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         self.booted = time.monotonic()
         self.events = deque(maxlen=80)
         self.sequence = 0
+        self.latest_tuning = None  # Informational display only; never a control action.
 
     def _record_locked(self, kind, ident, product, detail):
         self.sequence += 1
@@ -80,6 +81,7 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
                 "uptime_seconds": max(0, int(time.monotonic() - self.booted)),
                 "peers": peers, "events": list(self.events),
                 "sequence": self.sequence,
+                "tuning": dict(self.latest_tuning) if self.latest_tuning else None,
             }
 
     def record_event(self, peer, topic, value):
@@ -87,6 +89,27 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             info = self.peers.get(peer)
             if info is not None:
                 self._record_locked("event", info[0], info[1], topic + ": " + value)
+                if info[1] == "skell.key" and topic in {"musical.key", "musical.tuning"}:
+                    if topic == "musical.tuning":
+                        root, mode, mask, a4_millihz = map(int, value.split(","))
+                        self.latest_tuning = {
+                            "instance_id": info[0], "product_id": info[1],
+                            "root": root, "mode": mode,
+                            "scale_mask": mask, "a4_hz": a4_millihz / 1000.0,
+                            "at": round(time.time(), 3),
+                        }
+                    else:
+                        root, mode = map(int, value.split("."))
+                        previous = self.latest_tuning
+                        if not (previous and previous["instance_id"] == info[0]
+                                and previous["root"] == root and previous["mode"] == mode
+                                and previous["scale_mask"] is not None):
+                            self.latest_tuning = {
+                                "instance_id": info[0], "product_id": info[1],
+                                "root": root, "mode": mode,
+                                "scale_mask": None, "a4_hz": None,
+                                "at": round(time.time(), 3),
+                            }
 
     def register(self, peer, ident, product, display):
         with self.guard:
@@ -104,6 +127,8 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             others = list(self.peers)
             if was:
                 self._record_locked("leave", was[0], was[1], "offline")
+                if self.latest_tuning and self.latest_tuning["instance_id"] == was[0]:
+                    self.latest_tuning = None
         if was:
             self.send_many(others, encode("PEER", was[0], was[1], "offline"))
 

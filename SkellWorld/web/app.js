@@ -1,5 +1,6 @@
 "use strict";
 const byId = id => document.getElementById(id);
+const pitchNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 let catalogPlugins = [];
 let catalogFilter = "all";
 let lastSequence = null;
@@ -17,6 +18,28 @@ function uptime(seconds) {
   if (s < 3600) return Math.floor(s / 60) + "m " + s % 60 + "s";
   return Math.floor(s / 3600) + "h " + Math.floor(s % 3600 / 60) + "m";
 }
+function renderTuning(tuning) {
+  if (!tuning || !Number.isInteger(tuning.root) || tuning.root < 0 ||
+      tuning.root > 11 || ![0, 1].includes(tuning.mode)) {
+    byId("tuning-key").textContent = "—";
+    byId("tuning-a4").textContent = "—";
+    byId("tuning-status").textContent = "Waiting for a connected Skell Key signal";
+    byId("tuning-notes").replaceChildren(node("span", "muted", "Awaiting scale data"));
+    return;
+  }
+  byId("tuning-key").textContent = pitchNames[tuning.root] + (tuning.mode === 0 ? " Major" : " Minor");
+  const a4 = Number(tuning.a4_hz);
+  byId("tuning-a4").textContent = Number.isFinite(a4) && a4 >= 400 && a4 <= 480 ?
+    a4.toFixed(2) + " Hz" : "—";
+  byId("tuning-status").textContent = "Live informational signal · " + tuning.product_id;
+  const mask = tuning.scale_mask;
+  const notes = Number.isInteger(mask) && mask > 0 && mask <= 4095 ?
+    pitchNames.filter((_, i) => (mask & (1 << i)) !== 0) : [];
+  byId("tuning-notes").replaceChildren(...(notes.length ?
+    notes.map(name => node("span", "note-pill", name)) :
+    [node("span", "muted", "Key detected · full scale pending")]));
+}
+
 function renderStatus(data) {
   const peers = Array.isArray(data.peers) ? data.peers : [];
   const events = Array.isArray(data.events) ? data.events : [];
@@ -30,6 +53,7 @@ function renderStatus(data) {
   lastUptime = data.uptime_seconds;
   if (!restarted && sequence === lastSequence) return;
   lastSequence = sequence;
+  renderTuning(data.tuning);
   const holder = byId("peers");
   if (peers.length === 0) {
     const empty = node("div", "empty");
@@ -80,7 +104,8 @@ function filterCatalog() {
     const card = node("article", "catalog-card");
     const repository = plugin.repository || "";
     const name = plugin.display_name || repository.split("/").pop() || "Unknown product";
-    const flag = plugin.integration === "world-demo" ? "demo connection available" :
+    const flag = plugin.integration === "world-enabled" ? "world integration available" :
+      plugin.integration === "world-demo" ? "demo connection available" :
       plugin.integration === "shared-core-only" ? "shared core only" : "planned integration";
     const link = node("a", "catalog-link");
     // Repository names are catalog metadata, never arbitrary URLs.
@@ -93,7 +118,7 @@ function filterCatalog() {
       link.removeAttribute("href");
     }
     link.append(node("strong", "", name), node("small", "", repository),
-      node("div", "flag" + (plugin.integration === "world-demo" ? " connected" : ""), flag));
+      node("div", "flag" + (["world-demo","world-enabled"].includes(plugin.integration) ? " connected" : ""), flag));
     card.append(link);
     return card;
   }));
@@ -117,6 +142,7 @@ async function refresh() {
     byId("events").replaceChildren(node("p", "muted", "Waiting for the hub to reconnect."));
     lastSequence = null;
     lastUptime = -1;
+    renderTuning(null);
   } finally {
     isFetching = false;
   }

@@ -107,3 +107,11 @@ This local v1 protocol is **not authenticated**. It offers no arbitrary command/
 ## Integrated source repositories (Nov 2026 pilot)
 
 SkellKey (`skell-key-vst`) publishes validated detected major/minor keys as `skell.key`; SkellyTune mini (`skelltune-mini`) can follow as `skell.tune` after explicit opt-in. Both have four shared skull-click skins from SkellCore v0.6. Their Windows VST3 CI and GUI checks are tracked in their own repositories. **Real FL Studio two-plugin linking remains to be tested manually**; the registry marks that source code is integrated, not that a host session has been certified.
+
+## v0.3 — Live Skell Key panel and standalone Windows launcher
+
+The dashboard now displays the latest **validated informational** Skell Key key, full scale mask, and A4 in Hz. When Skell Key disconnects, its displayed tuning is cleared; a key-only announcement never overwrites a complete tuning snapshot from that same sender. The panel does not modify a plugin or DAW parameter.
+
+A new `tools/skellworld_desktop.py` launcher owns both local listeners and opens the browser-based dashboard. It has visible **Open Dashboard** and **Exit SkellWorld** buttons and uses a small native Tk interface, not an extra Chromium runtime. The Windows one-file packaged executable includes the Python runtime and assets, so customers do **not** need to install Python. Bundled resource paths are handled explicitly through PyInstaller's `_MEIPASS`.
+
+GitHub Actions builds a Windows portable ZIP, starts the packaged executable in headless smoke mode, checks both local endpoints, and exchanges a real SW1 musical tuning frame. A successful Python source test does not by itself confirm the packaged executable or FL Studio VST3 behavior; check the separate job results.
