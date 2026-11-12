@@ -84,6 +84,16 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.request(method="POST", path="/api/apps")[0], 405)
         self.assertEqual(self.request(path="/api/launch")[0], 404)
 
+    def test_read_only_source_integration_evidence(self):
+        status, raw, _ = self.request(path="/api/integrations")
+        self.assertEqual(status, 200)
+        payload = json.loads(raw)
+        self.assertEqual(payload["schema"], "skellworld-integrations/1")
+        pilots = {p["product_id"]: p for p in payload["pilots"]}
+        self.assertEqual(pilots["skell.key"]["source_status"], "implemented")
+        self.assertEqual(pilots["skell.tune"]["host_test"], "pending")
+        self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
+
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)

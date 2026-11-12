@@ -85,3 +85,14 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 @media(max-width:780px){.developer-intro{flex-direction:column;align-items:stretch}.developer-links{min-width:0}}
 @media(max-width:650px){.mode-nav{margin-top:16px}.mode-switch{width:100%}.mode-button{flex:1;padding:11px 10px}.mode-caption{margin:2px}.developer-intro{padding:25px 20px}}
 @media(prefers-reduced-motion:reduce){.mode-button{transition:none}}
+
+/* Developer Mode: source evidence and missing host tests are labelled separately. */
+.readiness-panel{margin:0 0 18px;min-height:210px}
+.readiness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.readiness-card{min-width:0;background:#132019;border:1px solid #34513c;border-radius:11px;padding:19px}
+.readiness-name{color:#e3fad7;font-size:15px;display:block}
+.readiness-card .muted{font-size:11px;margin:10px 0;line-height:1.7}
+.readiness-state{font-size:9px;letter-spacing:1px;border:1px solid #6b9657;border-radius:12px;background:#27452c;color:#bdff91;font-weight:850;padding:5px 8px;display:inline-block}
+.readiness-pending{font-size:10px;font-weight:850;color:#edc18b;letter-spacing:.6px;margin:13px 0}
+@media(max-width:1000px){.readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.readiness-grid{grid-template-columns:1fr}}

@@ -11,6 +11,7 @@ ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[1]))
 WEB = ROOT / "SkellWorld" / "web"
 CATALOG = ROOT / "SkellWorld" / "catalog.json"
 APPS = ROOT / "SkellWorld" / "apps.json"
+INTEGRATIONS = ROOT / "SkellWorld" / "integrations.json"
 
 class DashboardServer(ThreadingHTTPServer):
     daemon_threads = True
@@ -31,6 +32,8 @@ class DashboardServer(ThreadingHTTPServer):
         }
         with APPS.open("r", encoding="utf-8") as stream:
             self.apps = json.load(stream)
+        with INTEGRATIONS.open("r", encoding="utf-8") as stream:
+            self.integrations = json.load(stream)
         super().__init__(address, DashboardHandler)
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -84,6 +87,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return self._write(200, payload, "application/json; charset=utf-8", head)
         if self.path == "/api/apps":
             payload = json.dumps(self.server.apps, ensure_ascii=True).encode("utf-8")
+            return self._write(200, payload, "application/json; charset=utf-8", head)
+        if self.path == "/api/integrations":
+            payload = json.dumps(self.server.integrations, ensure_ascii=True).encode("utf-8")
             return self._write(200, payload, "application/json; charset=utf-8", head)
         if self.path not in paths:
             return self._write(404, b"Not found", head=head)

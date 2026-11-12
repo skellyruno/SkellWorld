@@ -221,6 +221,44 @@ async function loadCatalog() {
     byId("catalog").replaceChildren(node("p", "muted", "Catalog unavailable."));
   }
 }
+function renderIntegrationReadiness(data) {
+  const holder = byId("integration-readiness");
+  const pilots = Array.isArray(data.pilots) ? data.pilots : [];
+  if (!pilots.length) {
+    holder.replaceChildren(node("p", "muted", "No source integration profiles."));
+    return;
+  }
+  holder.replaceChildren(...pilots.map(pilot => {
+    const card = node("article", "readiness-card");
+    const title = node("strong", "readiness-name", pilot.name);
+    const role = node("p", "muted", pilot.role);
+    const state = node("span", "readiness-state",
+      pilot.source_status === "implemented" ? "SOURCE IMPLEMENTED" : "IN REVIEW");
+    const evidence = node("p", "muted", pilot.evidence);
+    const host = node("p", "readiness-pending", "FL STUDIO HOST TEST: " + pilot.host_test);
+    card.append(title, role, state, evidence, host);
+    if (typeof pilot.repository === "string" &&
+        /^skellyruno\/[A-Za-z0-9_.-]+$/.test(pilot.repository)) {
+      const link = node("a", "companion-link", "REPOSITORY");
+      link.href = "https://github.com/" + pilot.repository;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      card.append(link);
+    }
+    return card;
+  }));
+}
+async function loadIntegrationReadiness() {
+  try {
+    const response = await fetch("/api/integrations", {cache: "no-store"});
+    if (!response.ok) throw Error("integrations " + response.status);
+    const data = await response.json();
+    if (data.schema !== "skellworld-integrations/1") throw Error("unsupported integration profile");
+    renderIntegrationReadiness(data);
+  } catch (_error) {
+    byId("integration-readiness").replaceChildren(node("p", "muted", "Integration evidence unavailable."));
+  }
+}
 function renderCompanions(data) {
   companions = Array.isArray(data.apps) ? data.apps : [];
   const holder = byId("companions");
@@ -299,4 +337,5 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) refr
 refresh();
 loadCatalog();
 loadCompanions();
+loadIntegrationReadiness();
 setInterval(refresh, 1500);
