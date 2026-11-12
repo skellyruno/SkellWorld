@@ -199,11 +199,14 @@
     },
     {
       "repository": "skellyruno/skell-silence-vst",
-      "product_id": null,
-      "integration": "planned",
+      "product_id": "skell.silence",
+      "integration": "world-enabled",
       "vst3_code": "Sl01",
       "bundle_id": "uno.skellyr.silence",
-      "display_name": "Skell Silence"
+      "display_name": "Skell Silence",
+      "capabilities": [
+        "presence"
+      ]
     },
     {
       "repository": "skellyruno/skell-preset-vst",
