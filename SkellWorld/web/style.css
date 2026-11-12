@@ -96,3 +96,13 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .readiness-pending{font-size:10px;font-weight:850;color:#edc18b;letter-spacing:.6px;margin:13px 0}
 @media(max-width:1000px){.readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.readiness-grid{grid-template-columns:1fr}}
+
+/* Project Hub never transfers private names or paths to the World console. */
+.projecthub-panel{margin-bottom:18px;min-height:195px}
+.projecthub-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.projecthub-stat{display:flex;flex-direction:column;gap:6px;padding:16px 13px;border:1px solid #3c5d40;background:#1a2b1d;border-radius:10px}
+.projecthub-stat small{color:#90a993;font-size:9px;font-weight:850;letter-spacing:1px}
+.projecthub-stat strong{color:#c5ff98;font-size:27px}
+.projecthub-stale{color:#e2b274;font-size:11px;margin-top:14px;font-weight:750}
+@media(max-width:980px){.projecthub-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.projecthub-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}

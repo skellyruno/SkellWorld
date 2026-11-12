@@ -4,6 +4,8 @@ import importlib.util
 import json
 from pathlib import Path
 import threading
+import tempfile
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -93,6 +95,35 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(pilots["skell.key"]["source_status"], "implemented")
         self.assertEqual(pilots["skell.tune"]["host_test"], "pending")
         self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
+
+    def test_projecthub_summary_requires_opt_in_and_valid_counts(self):
+        with tempfile.TemporaryDirectory() as root:
+            file = Path(root) / "projecthub-summary-v1.json"
+            self.console.projecthub_file = file
+            status, body, _ = self.request(path="/api/projecthub")
+            self.assertEqual(status, 200)
+            self.assertFalse(json.loads(body)["shared"])
+            payload = {
+                "schema": "skellworld-projecthub-summary/1",
+                "source": "uno.skellyr.projecthub",
+                "generated_at": int(time.time()),
+                "counts": {"projects": 3, "ci_passed": 1, "ci_failed": 1,
+                           "ci_stale": 0, "ci_unknown": 1, "blocked": 1},
+                "secret": "should never be echoed"
+            }
+            file.write_text(json.dumps(payload), encoding="utf-8")
+            code, raw, _ = self.request(path="/api/projecthub")
+            self.assertEqual(code, 200)
+            data = json.loads(raw)
+            self.assertTrue(data["shared"])
+            self.assertEqual(data["counts"]["ci_failed"], 1)
+            self.assertNotIn("secret", raw.decode("utf-8"))
+            self.assertEqual(self.request(method="POST", path="/api/projecthub")[0], 405)
+            payload["counts"]["ci_failed"] = 999
+            file.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertFalse(json.loads(self.request(path="/api/projecthub")[1])["shared"])
+            file.unlink()
+            self.assertFalse(json.loads(self.request(path="/api/projecthub")[1])["shared"])
 
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")

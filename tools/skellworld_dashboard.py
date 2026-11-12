@@ -2,6 +2,8 @@
 """Read-only, loopback-only SkellWorld web console (Python standard library)."""
 from __future__ import annotations
 import json
+import os
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import sys
@@ -13,14 +15,58 @@ CATALOG = ROOT / "SkellWorld" / "catalog.json"
 APPS = ROOT / "SkellWorld" / "apps.json"
 INTEGRATIONS = ROOT / "SkellWorld" / "integrations.json"
 
+def projecthub_status_path() -> Path:
+    base = os.environ.get("APPDATA") or os.environ.get("XDG_DATA_HOME")
+    root = Path(base) if base else Path.home() / ".skell"
+    return root / "SKELL" / "WorldBridge" / "projecthub-summary-v1.json"
+
+def read_projecthub_status(path: Path) -> dict:
+    """Read only explicit aggregate exports. Never read Project Hub's workspace."""
+    result = {"schema": "skellworld-projecthub-bridge/1",
+              "shared": False, "stale": False, "counts": None,
+              "note": "No opted-in Project Hub summary. Open Project Hub Developer Mode to enable sharing."}
+    try:
+        if path.is_symlink() or path.parent.is_symlink():
+            return result
+        if not path.is_file() or path.stat().st_size > 4096:
+            return result
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict) or raw.get("schema") != "skellworld-projecthub-summary/1":
+            return result
+        if raw.get("source") != "uno.skellyr.projecthub":
+            return result
+        counts = raw.get("counts")
+        names = ("projects", "ci_passed", "ci_failed", "ci_stale", "ci_unknown", "blocked")
+        if not isinstance(counts, dict) or set(counts) != set(names):
+            return result
+        if not all(type(counts[k]) is int and 0 <= counts[k] <= 500 for k in names):
+            return result
+        if sum(counts[k] for k in names[1:5]) != counts["projects"]:
+            return result
+        if counts["blocked"] > counts["projects"]:
+            return result
+        stamp = raw.get("generated_at")
+        if type(stamp) is not int:
+            return result
+        age = int(time.time()) - stamp
+        if age < -600:
+            return result
+        return {"schema": result["schema"], "shared": True,
+                "stale": age > 86400, "age_seconds": max(0, age),
+                "counts": {key: counts[key] for key in names},
+                "note": "Explicitly shared aggregate counts. This does not prove the Project Hub app is running."}
+    except (OSError, ValueError, UnicodeError, TypeError):
+        return result
+
 class DashboardServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, address, world):
+    def __init__(self, address, world, projecthub_file=None):
         if address[0] != "127.0.0.1":
             raise ValueError("Dashboard must bind IPv4 loopback only")
         self.world = world
+        self.projecthub_file = Path(projecthub_file) if projecthub_file is not None else projecthub_status_path()
         with CATALOG.open("r", encoding="utf-8") as stream:
             raw = json.load(stream)
         self.catalog = {
@@ -90,6 +136,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return self._write(200, payload, "application/json; charset=utf-8", head)
         if self.path == "/api/integrations":
             payload = json.dumps(self.server.integrations, ensure_ascii=True).encode("utf-8")
+            return self._write(200, payload, "application/json; charset=utf-8", head)
+        if self.path == "/api/projecthub":
+            payload = json.dumps(read_projecthub_status(self.server.projecthub_file), ensure_ascii=True).encode("utf-8")
             return self._write(200, payload, "application/json; charset=utf-8", head)
         if self.path not in paths:
             return self._write(404, b"Not found", head=head)
