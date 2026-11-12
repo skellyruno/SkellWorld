@@ -75,6 +75,12 @@ def smoke(executable):
                 not any(a.get("id") == "uno.skellyr.projecthub" for a in apps["apps"])):
             raise AssertionError("missing packaged Project Hub companion registry")
         with urllib.request.urlopen(
+                f"http://127.0.0.1:{dash_port}/api/integrations", timeout=3) as response:
+            data = json.load(response)
+        if (data.get("schema") != "skellworld-integrations/1" or
+                len(data.get("pilots", [])) < 2):
+            raise AssertionError("missing packaged integration profiles")
+        with urllib.request.urlopen(
                 f"http://127.0.0.1:{dash_port}/", timeout=3) as response:
             if b"tuning-panel" not in response.read():
                 raise AssertionError("missing packaged web assets")

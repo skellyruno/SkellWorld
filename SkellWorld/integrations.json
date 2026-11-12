@@ -1,0 +1,33 @@
+{
+  "schema": "skellworld-integrations/1",
+  "summary": "Source integration status only. A successful CI build or SW1 protocol test is not an FL Studio host certification.",
+  "pilots": [
+    {
+      "product_id": "skell.key",
+      "name": "Skell Key",
+      "role": "Key / scale / A4 publisher",
+      "repository": "skellyruno/skell-key-vst",
+      "source_status": "implemented",
+      "evidence": "Windows VST3 CI passed for main",
+      "host_test": "pending"
+    },
+    {
+      "product_id": "skell.tune",
+      "name": "SkellyTune Mini",
+      "role": "Key / scale / A4 receiver",
+      "repository": "skellyruno/skelltune-mini",
+      "source_status": "implemented",
+      "evidence": "Windows VST3 and portable DSP CI passed for main",
+      "host_test": "pending"
+    },
+    {
+      "product_id": "skell.silence",
+      "name": "Skell Silence",
+      "role": "Optional local presence only",
+      "repository": "skellyruno/skell-silence-vst",
+      "source_status": "implemented",
+      "evidence": "Windows VST3 build and actual JUCE editor screenshot CI passed; source merged",
+      "host_test": "pending"
+    }
+  ]
+}

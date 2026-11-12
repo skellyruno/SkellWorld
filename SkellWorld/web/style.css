@@ -64,3 +64,35 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .companion-link{display:inline-flex;text-decoration:none;font-size:10px;letter-spacing:1px;font-weight:800;margin-top:8px;color:#adff79;border:1px solid #4e7d43;padding:10px 13px;border-radius:8px}
 .companion-link:hover{background:#28452c}.companion-link:focus-visible{outline:2px solid #b1ff7f;outline-offset:2px}
 @media(max-width:650px){.companion-grid{grid-template-columns:1fr}}
+
+/* Explicit user-selected views: never use CSS to imply privileged access. */
+[hidden]{display:none!important}
+.mode-nav{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:22px 0 2px;flex-wrap:wrap}
+.mode-switch{display:flex;gap:7px;border:1px solid #294432;background:#101b14;padding:5px;border-radius:13px}
+.mode-button{background:transparent;color:#99b29c;border:1px solid transparent;border-radius:9px;padding:11px 17px;font:inherit;font-size:11px;font-weight:900;letter-spacing:1px;cursor:pointer;text-align:left;transition:background .15s,color .15s}
+.mode-button span{display:block;margin-top:4px;letter-spacing:0;color:#7e9583;font-size:10px;font-weight:500}
+.mode-button.active{background:#29442c;color:#baff8b;border-color:#6da75d}.mode-button.active span{color:#b2d6a4}
+.mode-button:hover{color:#e3ffd4}.mode-button:focus-visible{outline:2px solid #baff88;outline-offset:2px}
+.mode-caption{max-width:410px;color:#809587;font-size:11px;line-height:1.6}
+.developer-intro{border:1px solid #31563a;border-radius:15px;padding:38px 36px;margin:22px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:32px;background:linear-gradient(125deg,#1c3221,#0c160f)}
+.developer-intro h2{font-size:clamp(30px,4vw,45px);letter-spacing:-1.4px;margin:15px 0}.developer-intro h2 span{color:#b7ff83}
+.developer-intro p{color:#97aa9c;font-size:13px;max-width:520px;line-height:1.75}
+.developer-links{display:flex;flex-direction:column;gap:10px;min-width:205px}
+.developer-links a{border:1px solid #406842;background:#203824;color:#c8f5b5;text-decoration:none;font-size:10px;font-weight:850;letter-spacing:.7px;padding:13px 15px;border-radius:8px}
+.developer-links a:hover{background:#345b36}.developer-links a:focus-visible{outline:2px solid #baff88;outline-offset:2px}
+.peer-group-label{color:#a3beaa;font-size:10px;font-weight:800;letter-spacing:.7px;padding:11px 4px 3px;border-top:1px solid #273d2b}
+.peer-group-label:first-child{border-top:0}
+@media(max-width:780px){.developer-intro{flex-direction:column;align-items:stretch}.developer-links{min-width:0}}
+@media(max-width:650px){.mode-nav{margin-top:16px}.mode-switch{width:100%}.mode-button{flex:1;padding:11px 10px}.mode-caption{margin:2px}.developer-intro{padding:25px 20px}}
+@media(prefers-reduced-motion:reduce){.mode-button{transition:none}}
+
+/* Developer Mode: source evidence and missing host tests are labelled separately. */
+.readiness-panel{margin:0 0 18px;min-height:210px}
+.readiness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.readiness-card{min-width:0;background:#132019;border:1px solid #34513c;border-radius:11px;padding:19px}
+.readiness-name{color:#e3fad7;font-size:15px;display:block}
+.readiness-card .muted{font-size:11px;margin:10px 0;line-height:1.7}
+.readiness-state{font-size:9px;letter-spacing:1px;border:1px solid #6b9657;border-radius:12px;background:#27452c;color:#bdff91;font-weight:850;padding:5px 8px;display:inline-block}
+.readiness-pending{font-size:10px;font-weight:850;color:#edc18b;letter-spacing:.6px;margin:13px 0}
+@media(max-width:1000px){.readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.readiness-grid{grid-template-columns:1fr}}

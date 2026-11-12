@@ -1,6 +1,7 @@
 """Headless lifecycle smoke tests for the desktop launcher service controller."""
 import http.client
-from unittest import mock
+import subprocess
+import socket
 import sys
 import unittest
 from pathlib import Path
@@ -9,7 +10,7 @@ TOOLS = str(Path(__file__).resolve().parents[2] / "tools")
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 
-from skellworld_desktop import LocalWorld, run_window
+from skellworld_desktop import LocalWorld
 
 
 class DesktopServiceTests(unittest.TestCase):
@@ -38,16 +39,27 @@ class DesktopServiceTests(unittest.TestCase):
         # Tk tests are Windows-only; the frozen EXE also exercises both paths.
         if sys.platform != "win32":
             self.skipTest("Windows Tk lifecycle regression")
+        # A Tk root must be created and destroyed in one process on the
+        # creating main thread. Keeping GUI Tcl state in the shared unittest
+        # interpreter can later crash under C++/socket test cleanup with
+        # Tcl_AsyncDelete, even if the UI test itself reports 'ok'.
+        script = str(Path(TOOLS) / "skellworld_desktop.py")
+        def free_port():
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind(("127.0.0.1", 0))
+                return sock.getsockname()[1]
         for path in ("button", "window"):
             with self.subTest(path=path):
-                world = LocalWorld(port=0, dashboard_port=0)
-                try:
-                    world.start()
-                    with mock.patch("skellworld_desktop.webbrowser.open") as browser:
-                        run_window(world, gui_exit_smoke=path)
-                        browser.assert_not_called()
-                finally:
-                    world.stop()
+                first, second = free_port(), free_port()
+                while first == second:
+                    second = free_port()
+                result = subprocess.run(
+                    [sys.executable, script, "--gui-exit-smoke", path,
+                     "--port", str(first), "--dashboard-port", str(second)],
+                    capture_output=True, text=True, timeout=25,
+                    check=False)
+                self.assertEqual(result.returncode, 0,
+                    f"Tk {path} close failed: {result.stderr}")
 
     def test_two_independent_listeners(self):
         world = LocalWorld(port=0, dashboard_port=0)

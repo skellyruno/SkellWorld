@@ -14,12 +14,19 @@
       <div class="brand"><div class="emblem" aria-hidden="true">S</div><div><span class="eyebrow">SKELL AUDIO / ECOSYSTEM</span><h1>SKELL<span>WORLD</span></h1></div></div>
       <div id="connection" class="connection" role="status" aria-live="polite"><span class="dot"></span><span id="connection-label">CONNECTING</span></div>
     </header>
+    <nav class="mode-nav" aria-label="SkellWorld workspace mode">
+      <div class="mode-switch" role="group" aria-label="Workspace">
+        <button class="mode-button active" id="mode-creator" data-mode="creator" type="button" aria-pressed="true">CREATOR MODE <span>Plugins &amp; presets</span></button>
+        <button class="mode-button" id="mode-developer" data-mode="developer" type="button" aria-pressed="false">DEVELOPER MODE <span>Projects &amp; builds</span></button>
+      </div>
+      <p class="mode-caption" id="mode-caption">Your connected SKELL plugins and creator tools. No installation scanning.</p>
+    </nav>
     <main>
-      <section class="hero">
+      <section class="hero" data-workspace="creator">
         <div><span class="eyebrow green">THE LOCAL CONNECTION LAYER</span><h2>Your plugins.<br><span>One world.</span></h2><p>See which SKELL plugins have joined, follow informational activity, and explore the ecosystem in one place. Audio processing stays in your DAW.</p></div>
         <div class="orbit" aria-hidden="true"><div class="ring ring-outer"></div><div class="ring ring-inner"></div><div class="center-mark">S<span>W</span></div><i class="orbit-dot d1"></i><i class="orbit-dot d2"></i><i class="orbit-dot d3"></i></div>
       </section>
-      <section class="tuning-panel" aria-label="Skell Key live tuning">
+      <section data-workspace="creator" class="tuning-panel" aria-label="Skell Key live tuning">
         <div class="tuning-heading">
           <div class="tuning-badge">KEY / SCALE / A4</div>
           <div><strong>Skell Key Link</strong><p id="tuning-status">Waiting for a connected Skell Key signal</p></div>
@@ -30,15 +37,15 @@
           <div class="tuning-item tuning-scale"><small>ACTIVE NOTES</small><div id="tuning-notes" class="tuning-notes"><span>Awaiting scale data</span></div></div>
         </div>
       </section>
-      <section class="stats" aria-label="Hub statistics">
+      <section data-workspace="creator" class="stats" aria-label="Hub statistics">
         <div class="stat"><span>ACTIVE INSTANCES</span><strong id="instance-count">—</strong><small>Joined voluntarily</small></div>
         <div class="stat"><span>CATALOG PRODUCTS</span><strong id="catalog-count">—</strong><small>Known repositories</small></div>
         <div class="stat"><span>HUB UPTIME</span><strong id="uptime">—</strong><small>Since this launch</small></div>
       </section>
-      <div class="layout">
+      <div data-workspace="creator" class="layout">
         <section class="panel live">
           <div class="panel-heading"><div><span class="eyebrow green">LIVE CONNECTIONS</span><h3>Connected plugins</h3></div><span class="pill" id="live-count">0 LIVE</span></div>
-          <div id="peers" class="peer-list"><div class="empty"><div class="empty-icon">◎</div><strong>Looking for plugins</strong><p>Run the hub, then click JOIN WORLD in a compatible plugin.</p></div></div>
+          <div id="peers" class="peer-list" aria-label="Connected instances grouped by plugin product"><div class="empty"><div class="empty-icon">◎</div><strong>Looking for plugins</strong><p>Run the hub, then click JOIN WORLD in a compatible plugin.</p></div></div>
           <div id="inspector" class="inspector" aria-label="Selected plugin details">
             <span class="eyebrow">INSTANCE INSPECTOR</span>
             <p class="muted">Select a connected plugin to inspect its session and recent informational activity.</p>
@@ -49,13 +56,25 @@
           <div id="events" class="event-list"><p class="muted">Waiting for plugin activity…</p></div>
         </section>
       </div>
+      <section data-workspace="developer" class="developer-intro" hidden>
+        <div><span class="eyebrow green">DEVELOPER WORKSPACE</span><h2>Built for the <span>builders.</span></h2><p>Project Hub remains independent. SkellWorld's local bus is read-only discovery, never GitHub credentials, build execution, filesystem writes, or command access.</p></div>
+        <div class="developer-links">
+          <a href="https://github.com/skellyruno/skell-project-hub" target="_blank" rel="noopener noreferrer">PROJECT HUB REPOSITORY</a>
+          <a href="https://github.com/skellyruno/SkellWorld/actions" target="_blank" rel="noopener noreferrer">SKELLWORLD BUILD HISTORY</a>
+          <a href="https://github.com/skellyruno/SkellWorld/blob/main/docs/SKELLWORLD_ARCHITECTURE.md" target="_blank" rel="noopener noreferrer">ARCHITECTURE &amp; SAFETY</a>
+        </div>
+      </section>
+      <section data-workspace="developer" class="panel readiness-panel" hidden>
+        <div class="panel-heading"><div><span class="eyebrow green">SOURCE VS HOST VERIFICATION</span><h3>Integration readiness</h3><p>Actual plug-in builds and a simulated SW1 protocol check are not the same as a successful FL Studio project test.</p></div><span class="pill">READ ONLY</span></div>
+        <div id="integration-readiness" class="readiness-grid"><p class="muted">Loading integration evidence…</p></div>
+      </section>
       <section class="panel companions-panel">
-        <div class="panel-heading"><div><span class="eyebrow green">ONE ECOSYSTEM, SEPARATE APPS</span><h3>SKELL workspaces</h3><p>Read-only discovery today; no automatic installation, launching, or privileged commands.</p></div><span class="pill">INTEGRATION MAP</span></div>
+        <div class="panel-heading"><div><span class="eyebrow green">ONE ECOSYSTEM, SEPARATE APPS</span><h3 id="companions-title">Creator workspace</h3><p>Read-only discovery today; no automatic installation, launching, or privileged commands.</p></div><span class="pill">INTEGRATION MAP</span></div>
         <div id="companions" class="companion-grid">
           <p class="muted">Loading workspaces…</p>
         </div>
       </section>
-      <section class="panel catalog-panel">
+      <section data-workspace="creator" class="panel catalog-panel">
         <div class="panel-heading"><div><span class="eyebrow green">ECOSYSTEM DIRECTORY</span><h3>Skell catalog</h3><p>Inventory only. Listed plugins are not necessarily installed or connected.</p></div><span class="pill">ADOPTION ROADMAP</span></div>
         <div class="catalog-tools">
           <label class="catalog-search"><span class="visually-hidden">Search SKELL products</span><input id="catalog-search" type="search" autocomplete="off" placeholder="Search products or repositories…" aria-label="Search products"></label>
