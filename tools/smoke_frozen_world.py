@@ -69,6 +69,12 @@ def smoke(executable):
         if len(catalog["plugins"]) < 20:
             raise AssertionError("missing packaged catalog")
         with urllib.request.urlopen(
+                f"http://127.0.0.1:{dash_port}/api/apps", timeout=3) as response:
+            apps = json.load(response)
+        if (apps.get("schema") != "skellworld-apps/1" or
+                not any(a.get("id") == "uno.skellyr.projecthub" for a in apps["apps"])):
+            raise AssertionError("missing packaged Project Hub companion registry")
+        with urllib.request.urlopen(
                 f"http://127.0.0.1:{dash_port}/", timeout=3) as response:
             if b"tuning-panel" not in response.read():
                 raise AssertionError("missing packaged web assets")
@@ -100,6 +106,25 @@ def smoke(executable):
         except subprocess.TimeoutExpired:
             app.kill()
             app.wait(timeout=5)
+
+    # Regression for user-reported TclError: "can't invoke winfo command:
+    # application has been destroyed". Test the actual frozen GUI process
+    # through both exit actions, not only its headless TCP service mode.
+    for action in ("button", "window"):
+        ui_port, ui_dash_port = available_port(), available_port()
+        while ui_port == ui_dash_port:
+            ui_dash_port = available_port()
+        result = subprocess.run(
+            [str(exe), "--gui-exit-smoke", action,
+             "--port", str(ui_port),
+             "--dashboard-port", str(ui_dash_port)],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, creationflags=flags,
+            timeout=35, check=False)
+        if result.returncode != 0:
+            raise AssertionError(
+                f"Packaged Tk launcher exit failed via {action}: return code {result.returncode}")
+        print(f"PASS: packaged Windows GUI closed cleanly via {action}")
 
 
 if __name__ == "__main__":

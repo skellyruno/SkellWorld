@@ -6,6 +6,11 @@ let catalogFilter = "all";
 let lastSequence = null;
 let lastUptime = -1;
 let isFetching = false;
+let selectedInstance = null;
+let lastPeers = [];
+let lastEvents = [];
+let companions = [];
+
 const node = (tag, className, value) => {
   const element = document.createElement(tag);
   if (className) element.className = className;
@@ -54,6 +59,32 @@ function renderStatus(data) {
   if (!restarted && sequence === lastSequence) return;
   lastSequence = sequence;
   renderTuning(data.tuning);
+  lastPeers = peers;
+  lastEvents = events;
+  renderPeersAndActivity(peers, events);
+}
+function renderInspector(peers, events) {
+  const holder = byId("inspector");
+  const selected = peers.find(peer => peer.instance_id === selectedInstance);
+  if (!selected) {
+    selectedInstance = null;
+    holder.replaceChildren(node("span", "eyebrow", "INSTANCE INSPECTOR"),
+      node("p", "muted", "Select a connected plugin to inspect its session and recent informational activity."));
+    return;
+  }
+  const recent = events.filter(event => event.instance_id === selected.instance_id).slice(-1)[0];
+  const title = node("strong", "inspector-name", selected.display_name || selected.product_id);
+  const id = node("p", "inspector-id", selected.instance_id);
+  const source = node("p", "muted", selected.product_id + " · connected now");
+  const activity = node("p", "muted",
+      recent ? "Last event: " + recent.kind + " · " + new Date(recent.at * 1000).toLocaleTimeString() :
+      "No activity recorded in the current session.");
+  const clear = node("button", "inspector-clear", "CLEAR SELECTION");
+  clear.type = "button";
+  clear.addEventListener("click", () => { selectedInstance = null; renderPeersAndActivity(lastPeers, lastEvents); });
+  holder.replaceChildren(node("span", "eyebrow", "INSTANCE INSPECTOR"), title, id, source, activity, clear);
+}
+function renderPeersAndActivity(peers, events) {
   const holder = byId("peers");
   if (peers.length === 0) {
     const empty = node("div", "empty");
@@ -61,18 +92,29 @@ function renderStatus(data) {
     holder.replaceChildren(empty);
   } else {
     holder.replaceChildren(...peers.map(peer => {
-      const card = node("article", "peer");
+      const card = node("button", "peer peer-button" +
+        (selectedInstance === peer.instance_id ? " peer-selected" : ""));
+      card.type = "button";
+      card.setAttribute("aria-pressed", String(selectedInstance === peer.instance_id));
       const info = node("div", "peer-info");
-      info.append(node("strong", "", peer.display_name || peer.product_id), node("small", "", peer.product_id + " · " + peer.instance_id));
-      card.append(node("div", "peer-icon", "S"), info, node("span", "state", "ONLINE"));
+      info.append(node("strong", "", peer.display_name || peer.product_id),
+                  node("small", "", peer.product_id + " · " + peer.instance_id));
+      card.append(node("div", "peer-icon", "S"), info, node("span", "state", "INSPECT"));
+      card.addEventListener("click", () => {
+        selectedInstance = selectedInstance === peer.instance_id ? null : peer.instance_id;
+        renderPeersAndActivity(lastPeers, lastEvents);
+      });
       return card;
     }));
   }
+  renderInspector(peers, events);
   const activity = byId("events");
-  if (!events.length) {
+  const shown = selectedInstance ? events.filter(event => event.instance_id === selectedInstance) : events;
+  byId("show-all-activity").textContent = selectedInstance ? "SHOW ALL" : "ALL ACTIVITY";
+  if (!shown.length) {
     activity.replaceChildren(node("p", "muted", "World activity appears here when plugins connect or publish informational events."));
   } else {
-    activity.replaceChildren(...events.slice().reverse().slice(0, 35).map(event => {
+    activity.replaceChildren(...shown.slice().reverse().slice(0, 35).map(event => {
       const item = node("article", "event");
       const info = node("div", "detail");
       info.append(node("strong", "", event.product_id), node("div", "", event.detail),
@@ -143,6 +185,10 @@ async function refresh() {
     lastSequence = null;
     lastUptime = -1;
     renderTuning(null);
+    lastPeers = [];
+    lastEvents = [];
+    selectedInstance = null;
+    renderInspector([], []);
   } finally {
     isFetching = false;
   }
@@ -156,6 +202,47 @@ async function loadCatalog() {
     byId("catalog").replaceChildren(node("p", "muted", "Catalog unavailable."));
   }
 }
+function renderCompanions(data) {
+  companions = Array.isArray(data.apps) ? data.apps : [];
+  const holder = byId("companions");
+  if (!companions.length) {
+    holder.replaceChildren(node("p", "muted", "No companion workspaces registered."));
+    return;
+  }
+  holder.replaceChildren(...companions.map(app => {
+    const card = node("article", "companion-card");
+    const mode = node("span", "eyebrow green", app.mode === "developer" ? "DEVELOPER MODE" : "CREATOR MODE");
+    const heading = node("strong", "companion-name", app.name);
+    const detail = node("p", "muted", app.description);
+    const state = node("p", "companion-status", app.status + " · no installed-app detection");
+    card.append(mode, heading, detail, state);
+    // Registry is data, not a license to execute commands or open local apps.
+    if (typeof app.repository === "string" && /^skellyruno\/[A-Za-z0-9_.-]+$/.test(app.repository)) {
+      const link = node("a", "companion-link", "VIEW GITHUB REPOSITORY");
+      link.href = "https://github.com/" + app.repository;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      card.append(link);
+    }
+    return card;
+  }));
+}
+async function loadCompanions() {
+  try {
+    const response = await fetch("/api/apps", {cache: "no-store"});
+    if (!response.ok) throw Error("apps " + response.status);
+    const data = await response.json();
+    if (data.schema !== "skellworld-apps/1") throw Error("unsupported companion schema");
+    renderCompanions(data);
+  } catch (_error) {
+    byId("companions").replaceChildren(node("p", "muted", "Companion directory unavailable."));
+  }
+}
+
+byId("show-all-activity").addEventListener("click", () => {
+  selectedInstance = null;
+  renderPeersAndActivity(lastPeers, lastEvents);
+});
 byId("catalog-search").addEventListener("input", filterCatalog);
 document.querySelectorAll("[data-filter]").forEach(button => {
   button.addEventListener("click", () => {
@@ -171,4 +258,5 @@ document.querySelectorAll("[data-filter]").forEach(button => {
 document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
 refresh();
 loadCatalog();
+loadCompanions();
 setInterval(refresh, 1500);

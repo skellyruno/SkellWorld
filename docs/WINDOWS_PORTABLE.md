@@ -24,3 +24,11 @@ Close any older SkellWorld hub before launching the EXE, because only one progra
 The GitHub Actions `SkellWorld portable Windows application` workflow runs the source tests, builds a PyInstaller one-file windowed EXE, starts **that actual packaged EXE**, checks the dashboard and catalog, sends a real SW1 Skell Key tuning message, and checks disconnect cleanup. It uploads the ZIP and EXE as Actions artifacts. The ZIP is not a signed production release.
 
 The plain source-based developer launcher remains available: `python tools/skellworld_hub.py --open-browser`.
+
+## SkellWorld v0.3.1 — Windows exit-crash fix
+
+The original v0.3 executable could raise a Tkinter `TclError` when the window closed because it called `winfo_exists()` **after** the Tk interpreter had already been destroyed. The launcher now uses one idempotent close callback for both **EXIT SKELLWORLD** and the title-bar **X** button, cancels queued UI callbacks before teardown, and never queries widgets after mainloop exits.
+
+The Windows packaging workflow now launches the **real frozen GUI** twice (via Exit and window close) and requires both processes to terminate with exit code 0. A headless source test would not have detected the original crash.
+
+The updated dashboard also offers a connected-instance inspector and a read-only Project Hub workspace directory. SkellWorld does not launch installed applications, send privileged commands, or read project files.

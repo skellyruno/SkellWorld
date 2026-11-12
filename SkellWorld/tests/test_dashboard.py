@@ -72,11 +72,23 @@ class DashboardTests(unittest.TestCase):
         self.world.unregister(peer)
         self.assertIsNone(json.loads(self.request()[1])["tuning"])
 
+    def test_safe_companion_registry(self):
+        code, raw, headers = self.request(path="/api/apps")
+        self.assertEqual(code, 200)
+        self.assertEqual(headers["Cache-Control"], "no-store")
+        data = json.loads(raw)
+        self.assertEqual(data["schema"], "skellworld-apps/1")
+        project = next(x for x in data["apps"] if x["mode"] == "developer")
+        self.assertEqual(project["repository"], "skellyruno/skell-project-hub")
+        self.assertEqual(project["integration"], "read-only-console-discovery")
+        self.assertEqual(self.request(method="POST", path="/api/apps")[0], 405)
+        self.assertEqual(self.request(path="/api/launch")[0], 404)
+
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
         self.assertGreaterEqual(len(json.loads(raw)["plugins"]), 20)
-        for page, marker in [("/", b"catalog-search"), ("/style.css", b".filter-btn"), ("/app.js", b"filterCatalog")]:
+        for page, marker in [("/", b"INSTANCE INSPECTOR"), ("/style.css", b".inspector"), ("/app.js", b"renderInspector")]:
             status, body, _ = self.request(path=page)
             self.assertEqual(status, 200)
             self.assertIn(marker, body)
