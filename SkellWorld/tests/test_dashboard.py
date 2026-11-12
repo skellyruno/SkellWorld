@@ -125,6 +125,14 @@ class DashboardTests(unittest.TestCase):
             file.unlink()
             self.assertFalse(json.loads(self.request(path="/api/projecthub")[1])["shared"])
 
+    def test_projecthub_windows_launcher_is_only_an_opt_in_uri(self):
+        status, page, _ = self.request(path="/")
+        self.assertEqual(status, 200)
+        self.assertIn(b'href="skellprojecthub://open"', page)
+        self.assertIn(b'Requires the Project Hub Windows app', page)
+        self.assertEqual(self.request(path="/api/launch")[0], 404)
+        self.assertEqual(self.request(method="POST", path="/api/projecthub")[0], 405)
+
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
