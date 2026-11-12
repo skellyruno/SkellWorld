@@ -10,6 +10,7 @@ let selectedInstance = null;
 let lastPeers = [];
 let lastEvents = [];
 let companions = [];
+let activeWorkspace = "creator";
 
 const node = (tag, className, value) => {
   const element = document.createElement(tag);
@@ -36,7 +37,11 @@ function renderTuning(tuning) {
   const a4 = Number(tuning.a4_hz);
   byId("tuning-a4").textContent = Number.isFinite(a4) && a4 >= 400 && a4 <= 480 ?
     a4.toFixed(2) + " Hz" : "—";
-  byId("tuning-status").textContent = "Live informational signal · " + tuning.product_id;
+  const secondsOld = Math.max(0, Date.now() / 1000 - Number(tuning.at || 0));
+  const stale = secondsOld > 12;
+  byId("tuning-status").textContent = stale ?
+    "Last Skell Key update " + Math.floor(secondsOld) + "s ago · verify signal" :
+    "Recent informational signal · " + tuning.product_id;
   const mask = tuning.scale_mask;
   const notes = Number.isInteger(mask) && mask > 0 && mask <= 4095 ?
     pitchNames.filter((_, i) => (mask & (1 << i)) !== 0) : [];
@@ -56,9 +61,9 @@ function renderStatus(data) {
   const sequence = data.sequence;
   const restarted = data.uptime_seconds < lastUptime;
   lastUptime = data.uptime_seconds;
+  renderTuning(data.tuning);
   if (!restarted && sequence === lastSequence) return;
   lastSequence = sequence;
-  renderTuning(data.tuning);
   lastPeers = peers;
   lastEvents = events;
   renderPeersAndActivity(peers, events);
@@ -91,21 +96,35 @@ function renderPeersAndActivity(peers, events) {
     empty.append(node("div", "empty-icon", "◎"), node("strong", "", "No plugins joined yet"), node("p", "", "Open a SkellWorld-compatible plugin and click JOIN WORLD."));
     holder.replaceChildren(empty);
   } else {
-    holder.replaceChildren(...peers.map(peer => {
-      const card = node("button", "peer peer-button" +
-        (selectedInstance === peer.instance_id ? " peer-selected" : ""));
-      card.type = "button";
-      card.setAttribute("aria-pressed", String(selectedInstance === peer.instance_id));
-      const info = node("div", "peer-info");
-      info.append(node("strong", "", peer.display_name || peer.product_id),
-                  node("small", "", peer.product_id + " · " + peer.instance_id));
-      card.append(node("div", "peer-icon", "S"), info, node("span", "state", "INSPECT"));
-      card.addEventListener("click", () => {
-        selectedInstance = selectedInstance === peer.instance_id ? null : peer.instance_id;
-        renderPeersAndActivity(lastPeers, lastEvents);
+    // An FL Studio session cannot be inferred from these instances. Group
+    // only by declared product ID; no invented DAW session names.
+    const groups = new Map();
+    peers.forEach(peer => {
+      if (!groups.has(peer.product_id)) groups.set(peer.product_id, []);
+      groups.get(peer.product_id).push(peer);
+    });
+    const grouped = [];
+    Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([productId, members]) => {
+      const count = members.length;
+      grouped.push(node("div", "peer-group-label",
+        productId + " · " + count + " joined instance" + (count === 1 ? "" : "s")));
+      members.forEach(peer => {
+        const card = node("button", "peer peer-button" +
+          (selectedInstance === peer.instance_id ? " peer-selected" : ""));
+        card.type = "button";
+        card.setAttribute("aria-pressed", String(selectedInstance === peer.instance_id));
+        const info = node("div", "peer-info");
+        info.append(node("strong", "", peer.display_name || peer.product_id),
+                    node("small", "", peer.instance_id));
+        card.append(node("div", "peer-icon", "S"), info, node("span", "state", "INSPECT"));
+        card.addEventListener("click", () => {
+          selectedInstance = selectedInstance === peer.instance_id ? null : peer.instance_id;
+          renderPeersAndActivity(lastPeers, lastEvents);
+        });
+        grouped.push(card);
       });
-      return card;
-    }));
+    });
+    holder.replaceChildren(...grouped);
   }
   renderInspector(peers, events);
   const activity = byId("events");
@@ -205,11 +224,14 @@ async function loadCatalog() {
 function renderCompanions(data) {
   companions = Array.isArray(data.apps) ? data.apps : [];
   const holder = byId("companions");
-  if (!companions.length) {
+  const available = companions.filter(app => app.mode === activeWorkspace);
+  byId("companions-title").textContent = activeWorkspace === "developer" ?
+    "Developer workspace" : "Creator workspace";
+  if (!available.length) {
     holder.replaceChildren(node("p", "muted", "No companion workspaces registered."));
     return;
   }
-  holder.replaceChildren(...companions.map(app => {
+  holder.replaceChildren(...available.map(app => {
     const card = node("article", "companion-card");
     const mode = node("span", "eyebrow green", app.mode === "developer" ? "DEVELOPER MODE" : "CREATOR MODE");
     const heading = node("strong", "companion-name", app.name);
@@ -239,6 +261,24 @@ async function loadCompanions() {
   }
 }
 
+function switchWorkspace(mode) {
+  if (mode !== "creator" && mode !== "developer") return;
+  activeWorkspace = mode;
+  document.querySelectorAll("[data-workspace]").forEach(section => {
+    section.hidden = section.dataset.workspace !== mode;
+  });
+  document.querySelectorAll("[data-mode]").forEach(button => {
+    const selected = button.dataset.mode === mode;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  byId("mode-caption").textContent = mode === "creator" ?
+    "Your connected SKELL plugins and creator tools. No installation scanning." :
+    "Independent SKELL development workspaces and read-only ecosystem information.";
+  renderCompanions({apps: companions});
+}
+document.querySelectorAll("[data-mode]").forEach(button =>
+  button.addEventListener("click", () => switchWorkspace(button.dataset.mode)));
 byId("show-all-activity").addEventListener("click", () => {
   selectedInstance = null;
   renderPeersAndActivity(lastPeers, lastEvents);
