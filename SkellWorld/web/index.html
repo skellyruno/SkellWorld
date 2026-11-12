@@ -64,6 +64,13 @@
           <a href="https://github.com/skellyruno/SkellWorld/blob/main/docs/SKELLWORLD_ARCHITECTURE.md" target="_blank" rel="noopener noreferrer">ARCHITECTURE &amp; SAFETY</a>
         </div>
       </section>
+      <section data-workspace="developer" class="panel projecthub-panel" hidden>
+        <div class="panel-heading">
+          <div><span class="eyebrow green">OPTIONAL LOCAL WORKSPACE BRIDGE</span><h3>Project Hub pulse</h3><p>Aggregate project and CI counts only. No project names, files, paths, notes or commands.</p></div>
+          <button id="refresh-projecthub" class="pill activity-reset" type="button">REFRESH</button>
+        </div>
+        <div id="projecthub-pulse" class="projecthub-pulse" aria-live="polite"><p class="muted">Checking for an opted-in status summary…</p></div>
+      </section>
       <section data-workspace="developer" class="panel readiness-panel" hidden>
         <div class="panel-heading"><div><span class="eyebrow green">SOURCE VS HOST VERIFICATION</span><h3>Integration readiness</h3><p>Actual plug-in builds and a simulated SW1 protocol check are not the same as a successful FL Studio project test.</p></div><span class="pill">READ ONLY</span></div>
         <div id="integration-readiness" class="readiness-grid"><p class="muted">Loading integration evidence…</p></div>

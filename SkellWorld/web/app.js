@@ -11,6 +11,8 @@ let lastPeers = [];
 let lastEvents = [];
 let companions = [];
 let activeWorkspace = "creator";
+let projectHubBusy = false;
+
 
 const node = (tag, className, value) => {
   const element = document.createElement(tag);
@@ -221,6 +223,44 @@ async function loadCatalog() {
     byId("catalog").replaceChildren(node("p", "muted", "Catalog unavailable."));
   }
 }
+function renderProjectHubPulse(data) {
+  const holder = byId("projecthub-pulse");
+  if (!data || data.schema !== "skellworld-projecthub-bridge/1" ||
+      !data.shared || !data.counts) {
+    holder.replaceChildren(node("p", "muted",
+      "Project Hub sharing is OFF or no valid summary exists. In the Project Hub Windows app, open SkellWorld and choose Share counts with SkellWorld."));
+    return;
+  }
+  const c = data.counts;
+  const tiles = [
+    ["PROJECTS", c.projects], ["CI PASSED", c.ci_passed],
+    ["CI FAILED", c.ci_failed], ["CI STALE", c.ci_stale],
+    ["CI UNKNOWN", c.ci_unknown], ["BLOCKED", c.blocked]
+  ];
+  const grid = node("div", "projecthub-stats");
+  grid.append(...tiles.map(([label, count]) => {
+    const tile = node("div", "projecthub-stat");
+    tile.append(node("small", "", label), node("strong", "", count));
+    return tile;
+  }));
+  const freshness = node("p", data.stale ? "projecthub-stale" : "muted",
+      (data.stale ? "STALE SUMMARY · " : "Shared summary · ") +
+      Math.floor(Number(data.age_seconds || 0) / 60) + "m old · Project Hub may be closed");
+  holder.replaceChildren(grid, freshness);
+}
+async function refreshProjectHub() {
+  if (projectHubBusy || document.hidden || activeWorkspace !== "developer") return;
+  projectHubBusy = true;
+  try {
+    const response = await fetch("/api/projecthub", {cache: "no-store"});
+    if (!response.ok) throw Error("project hub " + response.status);
+    renderProjectHubPulse(await response.json());
+  } catch (_error) {
+    byId("projecthub-pulse").replaceChildren(node("p", "muted", "Project Hub summary unavailable."));
+  } finally {
+    projectHubBusy = false;
+  }
+}
 function renderIntegrationReadiness(data) {
   const holder = byId("integration-readiness");
   const pilots = Array.isArray(data.pilots) ? data.pilots : [];
@@ -314,9 +354,11 @@ function switchWorkspace(mode) {
     "Your connected SKELL plugins and creator tools. No installation scanning." :
     "Independent SKELL development workspaces and read-only ecosystem information.";
   renderCompanions({apps: companions});
+  if (mode === "developer") refreshProjectHub();
 }
 document.querySelectorAll("[data-mode]").forEach(button =>
   button.addEventListener("click", () => switchWorkspace(button.dataset.mode)));
+byId("refresh-projecthub").addEventListener("click", refreshProjectHub);
 byId("show-all-activity").addEventListener("click", () => {
   selectedInstance = null;
   renderPeersAndActivity(lastPeers, lastEvents);
@@ -339,3 +381,4 @@ loadCatalog();
 loadCompanions();
 loadIntegrationReadiness();
 setInterval(refresh, 1500);
+setInterval(refreshProjectHub, 15000);
