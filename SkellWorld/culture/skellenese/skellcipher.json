@@ -1,0 +1,11 @@
+{
+  "schema": "skellworld/skellcipher-design/1",
+  "name": "SkellCipher",
+  "status": "design-not-approved",
+  "security": "artistic-puzzle-only-not-encryption",
+  "writing_direction": "left-to-right-proposed",
+  "character_inventory": "Latin A-Z, numerals 0-9, selected punctuation (subject to approval)",
+  "glyphs": {},
+  "accessibility": "Always publish optional legible plaintext transcription and alt text",
+  "content_rules": "No hidden private information, security codes, or misleading prize conditions"
+}

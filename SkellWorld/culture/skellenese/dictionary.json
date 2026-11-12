@@ -1,0 +1,38 @@
+{
+  "schema": "skellworld/skellenese-dictionary/1",
+  "language": "Skellenese",
+  "status": "draft",
+  "editorial_policy": "User approval required for any canonical Skelly terms",
+  "entries": [
+    {
+      "id": "gravecall",
+      "term": "Gravecall",
+      "status": "proposal",
+      "pronunciation": "GRAVE-call",
+      "meaning": "An invitation to gather supporters for a reveal or event.",
+      "example": "The Gravecall drops before Song Wars.",
+      "origin": "draft-example",
+      "credit": "Unassigned"
+    },
+    {
+      "id": "bonebound",
+      "term": "Bonebound",
+      "status": "proposal",
+      "pronunciation": "BONE-bound",
+      "meaning": "A word for sticking together through projects and releases.",
+      "example": "The crew stays Bonebound.",
+      "origin": "draft-example",
+      "credit": "Unassigned"
+    },
+    {
+      "id": "cryptlight",
+      "term": "Cryptlight",
+      "status": "proposal",
+      "pronunciation": "CRYPT-light",
+      "meaning": "A clue that leads fans toward a hidden creative reveal.",
+      "example": "Look for the Cryptlight in the cover art.",
+      "origin": "draft-example",
+      "credit": "Unassigned"
+    }
+  ]
+}
