@@ -1,6 +1,5 @@
 """Headless lifecycle smoke tests for the desktop launcher service controller."""
 import http.client
-import tkinter as tk
 from unittest import mock
 import sys
 import unittest
