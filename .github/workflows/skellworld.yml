@@ -32,3 +32,12 @@ jobs:
         run: node --check SkellWorld/web/app.js
       - name: Integration and security regression tests
         run: python -m unittest discover -s SkellWorld/tests -v
+      - name: Synthetic 1 / 8 / 16 / 32 peer load and protocol validation
+        run: python tools/benchmark_skellworld.py --counts 1,8,16,32 --events 8 --output skellworld-benchmark.json
+      - name: Upload benchmark observations
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: skellworld-load-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: skellworld-benchmark.json
+          if-no-files-found: error
+          retention-days: 14
