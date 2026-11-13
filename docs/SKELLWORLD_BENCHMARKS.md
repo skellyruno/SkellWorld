@@ -34,3 +34,7 @@ absolute pass/fail threshold.
 
 If future benchmarks expose stalls, optimize the hub's communication
 implementation before raising capacity or introducing remote controls.
+
+### Small-frame transport tuning
+
+The hub asks the OS to set `TCP_NODELAY` on accepted localhost SW1 sockets so short presence and event messages do not wait behind Nagle/delayed-ACK interactions. It keeps the existing bounded write deadline and per-peer send locks. A failure to set this optional socket mode is nonfatal. The benchmark records observed latency on each runner and does **not** promise any particular absolute latency or PDC inside a DAW.

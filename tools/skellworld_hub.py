@@ -177,6 +177,14 @@ class WorldHandler(socketserver.BaseRequestHandler):
     # Never take the server registry guard while holding a network write.
     def setup(self):
         super().setup()
+        # Local SW1 messages are tiny, event-triggered frames. Disable Nagle
+        # on the accepted socket to avoid tens-of-ms delayed-ACK interactions
+        # when the join snapshot and peer/event notifications overlap.
+        # The socket is never used by the DAW audio callback.
+        try:
+            self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError:
+            pass  # Keep protocol available on uncommon TCP stacks.
         self._write_guard = threading.Lock()
 
     def _write_locked(self, frame):
