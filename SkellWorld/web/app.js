@@ -12,6 +12,7 @@ let lastEvents = [];
 let companions = [];
 let activeWorkspace = "creator";
 let projectHubBusy = false;
+let lastTuningDisplay = null;
 
 
 const node = (tag, className, value) => {
@@ -27,29 +28,39 @@ function uptime(seconds) {
   return Math.floor(s / 3600) + "h " + Math.floor(s % 3600 / 60) + "m";
 }
 function renderTuning(tuning) {
-  if (!tuning || !Number.isInteger(tuning.root) || tuning.root < 0 ||
-      tuning.root > 11 || ![0, 1].includes(tuning.mode)) {
-    byId("tuning-key").textContent = "—";
-    byId("tuning-a4").textContent = "—";
+  const valid = tuning && Number.isInteger(tuning.root) && tuning.root >= 0 &&
+      tuning.root <= 11 && [0, 1].includes(tuning.mode);
+  if (!valid) {
+    if (lastTuningDisplay !== null) {
+      byId("tuning-key").textContent = "—";
+      byId("tuning-a4").textContent = "—";
+      byId("tuning-notes").replaceChildren(node("span", "muted", "Awaiting scale data"));
+      lastTuningDisplay = null;
+    }
     byId("tuning-status").textContent = "Waiting for a connected Skell Key signal";
-    byId("tuning-notes").replaceChildren(node("span", "muted", "Awaiting scale data"));
     return;
   }
-  byId("tuning-key").textContent = pitchNames[tuning.root] + (tuning.mode === 0 ? " Major" : " Minor");
   const a4 = Number(tuning.a4_hz);
-  byId("tuning-a4").textContent = Number.isFinite(a4) && a4 >= 400 && a4 <= 480 ?
-    a4.toFixed(2) + " Hz" : "—";
+  const mask = tuning.scale_mask;
+  const key = [tuning.instance_id, tuning.root, tuning.mode, mask,
+               Number.isFinite(a4) ? a4 : "none"].join("|");
+  // Avoid rebuilding twelve note elements on every 1.5s status poll.
+  // A changed key, sender or scale still updates instantly.
+  if (key !== lastTuningDisplay) {
+    byId("tuning-key").textContent = pitchNames[tuning.root] +
+      (tuning.mode === 0 ? " Major" : " Minor");
+    byId("tuning-a4").textContent = Number.isFinite(a4) && a4 >= 400 && a4 <= 480 ?
+      a4.toFixed(2) + " Hz" : "—";
+    const notes = Number.isInteger(mask) && mask > 0 && mask <= 4095 ?
+      pitchNames.filter((_, i) => (mask & (1 << i)) !== 0) : [];
+    byId("tuning-notes").replaceChildren(...(notes.length ?
+      notes.map(name => node("span", "note-pill", name)) :
+      [node("span", "muted", "Key detected · full scale pending")]));
+    lastTuningDisplay = key;
+  }
   const secondsOld = Math.max(0, Date.now() / 1000 - Number(tuning.at || 0));
-  // This is a state snapshot, NOT a required heartbeat. A perfectly healthy
-  // key may stay unchanged for minutes; age alone must not be an error.
   byId("tuning-status").textContent =
     "Shared " + uptime(secondsOld) + " ago · Skell Key sender joined";
-  const mask = tuning.scale_mask;
-  const notes = Number.isInteger(mask) && mask > 0 && mask <= 4095 ?
-    pitchNames.filter((_, i) => (mask & (1 << i)) !== 0) : [];
-  byId("tuning-notes").replaceChildren(...(notes.length ?
-    notes.map(name => node("span", "note-pill", name)) :
-    [node("span", "muted", "Key detected · full scale pending")]));
 }
 
 function renderStatus(data) {
