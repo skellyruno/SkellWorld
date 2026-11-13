@@ -40,10 +40,10 @@ function renderTuning(tuning) {
   byId("tuning-a4").textContent = Number.isFinite(a4) && a4 >= 400 && a4 <= 480 ?
     a4.toFixed(2) + " Hz" : "—";
   const secondsOld = Math.max(0, Date.now() / 1000 - Number(tuning.at || 0));
-  const stale = secondsOld > 12;
-  byId("tuning-status").textContent = stale ?
-    "Last Skell Key update " + Math.floor(secondsOld) + "s ago · verify signal" :
-    "Recent informational signal · " + tuning.product_id;
+  // This is a state snapshot, NOT a required heartbeat. A perfectly healthy
+  // key may stay unchanged for minutes; age alone must not be an error.
+  byId("tuning-status").textContent =
+    "Shared " + uptime(secondsOld) + " ago · Skell Key sender joined";
   const mask = tuning.scale_mask;
   const notes = Number.isInteger(mask) && mask > 0 && mask <= 4095 ?
     pitchNames.filter((_, i) => (mask & (1 << i)) !== 0) : [];
