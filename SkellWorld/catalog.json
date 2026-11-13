@@ -76,8 +76,8 @@
     },
     {
       "repository": "skellyruno/skell-eq-vst",
-      "product_id": null,
-      "integration": "planned",
+      "product_id": "skell.eq",
+      "integration": "world-enabled",
       "vst3_code": "SeQ1",
       "bundle_id": "audio.skelly.eq",
       "display_name": "Skelly EQ"
@@ -210,8 +210,8 @@
     },
     {
       "repository": "skellyruno/skell-preset-vst",
-      "product_id": null,
-      "integration": "planned",
+      "product_id": "skell.preset",
+      "integration": "world-enabled",
       "vst3_code": "SkPr",
       "bundle_id": "audio.skell.preset",
       "display_name": "Skell-Preset"

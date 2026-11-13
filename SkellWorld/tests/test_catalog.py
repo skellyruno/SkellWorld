@@ -12,7 +12,7 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(all(name.startswith("skellyruno/skell") for name in names))
         self.assertEqual(len([p for p in d["plugins"] if p["integration"]=="world-demo"]),1)
         self.assertEqual({p["product_id"] for p in d["plugins"] if p["integration"]=="world-enabled"},
-                         {"skell.key","skell.tune","skell.silence"})
+                         {"skell.key","skell.tune","skell.silence","skell.preset","skell.eq"})
         codes=[p["vst3_code"].lower() for p in d["plugins"] if p.get("vst3_code")]
         self.assertEqual(len(codes),len(set(codes)))
         self.assertGreaterEqual(len(codes),22)
