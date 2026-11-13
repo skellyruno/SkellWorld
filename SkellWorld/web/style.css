@@ -106,3 +106,18 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .projecthub-stale{color:#e2b274;font-size:11px;margin-top:14px;font-weight:750}
 @media(max-width:980px){.projecthub-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:480px){.projecthub-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* On-demand diagnostics; no extra polling or network scans. */
+.connection-health{margin:17px 0 18px;padding-bottom:18px}
+.health-trigger{cursor:pointer;background:#223b25;border:1px solid #6b9d50;color:#bbff92;font-weight:850;letter-spacing:1px}
+.health-trigger:hover{background:#315b33}.health-trigger:focus-visible{outline:2px solid #c7ff9f;outline-offset:2px}
+.health-trigger:disabled{cursor:wait;opacity:.6}
+.health-results{min-height:42px}.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.health-tile{display:flex;flex-direction:column;gap:8px;border:1px solid #3b603f;border-radius:10px;background:#142219;padding:15px;min-width:0}
+.health-caption{color:#94b599;font-size:9px;font-weight:800;letter-spacing:.9px}
+.health-value{font-size:25px;color:#c3ff94;white-space:nowrap}
+.health-explain{color:#98ad9a;line-height:1.5;font-size:10px}
+.health-error{color:#f0be8b;font-size:12px}
+.inspector-metric{font-size:12px;font-weight:800;color:#b8ff90}
+@media(max-width:1050px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.health-grid{grid-template-columns:1fr}.connection-health .panel-heading{flex-wrap:wrap;gap:12px}}

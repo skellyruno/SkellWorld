@@ -123,3 +123,12 @@ Click a joined plugin in **Connected plugins** to see the session identifier, st
 `/api/apps` is a static, read-only registry of companion applications. It records **SKELL Project Hub** as an independent Developer Mode application using `skellworld-app/1` read-only console discovery and **SkellyHub** as a planned Creator Mode integration. Registered applications are **not necessarily installed or running**. Only the canonical GitHub repository link is exposed; local executable launching and user file access are not enabled.
 
 The Windows launcher exit path is explicitly covered by a packaged executable test for both **EXIT SKELLWORLD** and title-bar close.
+
+
+## v0.5 connection health milestone
+
+SkellWorld now lists the verified **Skell Preset** and **Skelly EQ** source integrations in the catalog, alongside Key, Tune, and Silence. Their host-level FL Studio test status remains **pending**.
+
+The hub's existing read-only `/api/status` includes per-joined-instance transport metadata: `connected_seconds`, `events_sent`, and `last_event_seconds_ago` (null when no event has been sent). These values contain no audio, preset, parameter or project information. They are reset when an instance leaves. **A lack of events is not evidence that a plugin has disconnected**, because SW1 v1 does not require periodic heartbeats.
+
+The Creator dashboard has an on-demand **Run Check** button. It queries only the local `/api/status` and `/api/catalog` endpoints, reports connected sessions and source-integrated products, and does not scan the machine or issue remote commands. The instance inspector shows session duration and last informational event age.

@@ -64,7 +64,11 @@ function renderStatus(data) {
   const restarted = data.uptime_seconds < lastUptime;
   lastUptime = data.uptime_seconds;
   renderTuning(data.tuning);
-  if (!restarted && sequence === lastSequence) return;
+  if (!restarted && sequence === lastSequence) {
+    // Display elapsed session time without rebuilding the full event feed.
+    if (selectedInstance) renderInspector(peers, events);
+    return;
+  }
   lastSequence = sequence;
   lastPeers = peers;
   lastEvents = events;
@@ -82,14 +86,22 @@ function renderInspector(peers, events) {
   const recent = events.filter(event => event.instance_id === selected.instance_id).slice(-1)[0];
   const title = node("strong", "inspector-name", selected.display_name || selected.product_id);
   const id = node("p", "inspector-id", selected.instance_id);
-  const source = node("p", "muted", selected.product_id + " · connected now");
+  const source = node("p", "muted", selected.product_id + " · TCP connection currently joined");
+  const duration = node("p", "inspector-metric",
+    "Connected " + uptime(selected.connected_seconds) +
+    " · " + selected.events_sent + " informational event" +
+    (selected.events_sent === 1 ? "" : "s"));
+  const last = selected.last_event_seconds_ago;
   const activity = node("p", "muted",
-      recent ? "Last event: " + recent.kind + " · " + new Date(recent.at * 1000).toLocaleTimeString() :
-      "No activity recorded in the current session.");
+    last === null || last === undefined ?
+      "No informational events yet. An idle plugin can still be connected." :
+      "Last event " + uptime(last) + " ago" +
+      (recent ? " · " + recent.kind : "") +
+      ". Inactivity alone does not mean the connection failed.");
   const clear = node("button", "inspector-clear", "CLEAR SELECTION");
   clear.type = "button";
   clear.addEventListener("click", () => { selectedInstance = null; renderPeersAndActivity(lastPeers, lastEvents); });
-  holder.replaceChildren(node("span", "eyebrow", "INSTANCE INSPECTOR"), title, id, source, activity, clear);
+  holder.replaceChildren(node("span", "eyebrow", "INSTANCE INSPECTOR"), title, id, source, duration, activity, clear);
 }
 function renderPeersAndActivity(peers, events) {
   const holder = byId("peers");
@@ -185,6 +197,58 @@ function filterCatalog() {
     card.append(link);
     return card;
   }));
+}
+async function runConnectionCheck() {
+  const button = byId("run-connection-check");
+  const holder = byId("connection-check-results");
+  if (button.disabled) return;
+  button.disabled = true;
+  button.textContent = "CHECKING";
+  try {
+    const [statusResult, catalogResult] = await Promise.all([
+      fetch("/api/status", {cache:"no-store"}),
+      fetch("/api/catalog", {cache:"no-store"})
+    ]);
+    if (!statusResult.ok || !catalogResult.ok) throw Error("local endpoint unavailable");
+    const [status, catalog] = await Promise.all([
+      statusResult.json(), catalogResult.json()
+    ]);
+    if (status.schema !== "skellworld-status/1" ||
+        catalog.schema !== "skellworld-catalog/1") {
+      throw Error("incompatible SkellWorld schema");
+    }
+    const peers = Array.isArray(status.peers) ? status.peers : [];
+    const products = Array.isArray(catalog.plugins) ? catalog.plugins : [];
+    const ready = products.filter(p => p.integration === "world-enabled");
+    const observed = new Set(peers.map(p => p.product_id));
+    const joined = ready.filter(p => observed.has(p.product_id));
+    const lines = [
+      ["HUB", "ONLINE", "The localhost hub responded to a read-only status request."],
+      ["OPTED-IN INSTANCES", String(peers.length), peers.length ?
+        "These are connected plugin sessions, not an installed-plugin scan." :
+        "No sessions joined. Open the plugin's existing Settings/World menu and enable Join."],
+      ["SOURCE INTEGRATIONS", String(ready.length),
+        "Products with source integration and build validation; FL Studio host testing is separate."],
+      ["INTEGRATED PRODUCTS JOINED", String(joined.length) + " / " + ready.length,
+        "Unjoined products might be closed, disconnected or not installed. No inference is possible."]
+    ];
+    const grid = node("div", "health-grid");
+    grid.append(...lines.map(([label, amount, detail]) => {
+      const cell = node("div", "health-tile");
+      cell.append(node("span", "health-caption", label),
+                  node("strong", "health-value", amount),
+                  node("small", "health-explain", detail));
+      return cell;
+    }));
+    holder.replaceChildren(grid, node("p", "muted",
+      "Connection checks are informational. No control or network access outside this local hub."));
+  } catch (_error) {
+    holder.replaceChildren(node("p", "health-error",
+      "Unable to reach the local SkellWorld hub. Check that SkellWorld.exe is running and reload the dashboard."));
+  } finally {
+    button.disabled = false;
+    button.textContent = "RUN CHECK";
+  }
 }
 async function refresh() {
   if (document.hidden || isFetching) return;
@@ -359,6 +423,7 @@ function switchWorkspace(mode) {
 document.querySelectorAll("[data-mode]").forEach(button =>
   button.addEventListener("click", () => switchWorkspace(button.dataset.mode)));
 byId("refresh-projecthub").addEventListener("click", refreshProjectHub);
+byId("run-connection-check").addEventListener("click", runConnectionCheck);
 byId("show-all-activity").addEventListener("click", () => {
   selectedInstance = null;
   renderPeersAndActivity(lastPeers, lastEvents);
