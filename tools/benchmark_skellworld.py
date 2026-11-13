@@ -115,6 +115,18 @@ def exercise(peers: int, events: int = 8):
             event_times.append((time.perf_counter() - started) * 1000)
 
         url = "http://127.0.0.1:" + str(console.server_address[1]) + "/api/status"
+        # With one peer, EVENT has no recipients. Its socket read happens
+        # asynchronously, so the first HTTP poll may precede registration of
+        # the last message. Wait for observed processed state, not a sleep.
+        deadline = time.monotonic() + 4
+        while True:
+            snap = world.snapshot()
+            sender = next(p for p in snap["peers"] if p["instance_id"] == "load-0")
+            if sender["events_sent"] == events:
+                break
+            if time.monotonic() > deadline:
+                raise AssertionError("Timed out waiting for server event processing")
+            time.sleep(0.01)
         for _ in range(5):
             started = time.perf_counter()
             with urllib.request.urlopen(url, timeout=5) as response:
