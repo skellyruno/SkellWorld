@@ -42,6 +42,15 @@
         <div class="stat"><span>CATALOG PRODUCTS</span><strong id="catalog-count">—</strong><small>Known repositories</small></div>
         <div class="stat"><span>HUB UPTIME</span><strong id="uptime">—</strong><small>Since this launch</small></div>
       </section>
+      <section data-workspace="creator" class="panel connection-health">
+        <div class="panel-heading">
+          <div><span class="eyebrow green">LOCAL CONNECTION DIAGNOSTICS</span><h3>World connection check</h3><p>Inspect this hub and opted-in instances without scanning installed plugins or modifying your DAW.</p></div>
+          <button id="run-connection-check" type="button" class="pill health-trigger">RUN CHECK</button>
+        </div>
+        <div id="connection-check-results" class="health-results" role="status" aria-live="polite">
+          <p class="muted">Press Run Check to inspect the current hub and connection status.</p>
+        </div>
+      </section>
       <div data-workspace="creator" class="layout">
         <section class="panel live">
           <div class="panel-heading"><div><span class="eyebrow green">LIVE CONNECTIONS</span><h3>Connected plugins</h3></div><span class="pill" id="live-count">0 LIVE</span></div>

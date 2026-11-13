@@ -180,6 +180,37 @@ class WorldHubTests(unittest.TestCase):
                          ["PEER","pretender"])
         self.assertIsNone(self.server.snapshot()["tuning"])
 
+    def test_per_instance_connection_observability(self):
+        # Observability is transport metadata only, not inferred DAW activity.
+        peer = object()
+        self.assertEqual(self.server.register(peer, "test-observe", "skell.preset", "Preset"), [])
+        snapshot = self.server.snapshot()
+        self.assertEqual(snapshot["peer_count"], 1)
+        item = snapshot["peers"][0]
+        self.assertEqual(item["connected_seconds"], 0)
+        self.assertEqual(item["events_sent"], 0)
+        self.assertIsNone(item["last_event_seconds_ago"])
+        self.server.record_event(peer, "theme", "neon")
+        item = self.server.snapshot()["peers"][0]
+        self.assertEqual(item["events_sent"], 1)
+        self.assertGreaterEqual(item["last_event_seconds_ago"], 0)
+        self.assertNotIn("audio", item)
+        self.server.unregister(peer)
+        self.assertEqual(self.server.snapshot()["peers"], [])
+        self.assertEqual(len(self.server.peer_activity), 0)
+
+    def test_multiple_peers_have_independent_activity(self):
+        a, b = object(), object()
+        self.server.register(a, "instance-a", "skell.eq", "EQ")
+        self.server.register(b, "instance-b", "skell.preset", "Preset")
+        self.server.record_event(a, "theme", "dark")
+        report = {p["instance_id"]: p for p in self.server.snapshot()["peers"]}
+        self.assertEqual(report["instance-a"]["events_sent"], 1)
+        self.assertEqual(report["instance-b"]["events_sent"], 0)
+        self.assertIsNone(report["instance-b"]["last_event_seconds_ago"])
+        # The fake peer handles are suitable for inspecting state, not
+        # network-send fanout. Independent teardown is covered above.
+
     def test_loopback_only(self):
         self.assertEqual(self.server.server_address[0],"127.0.0.1")
         with self.assertRaises(ValueError):

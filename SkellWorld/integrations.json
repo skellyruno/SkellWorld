@@ -28,6 +28,24 @@
       "source_status": "implemented",
       "evidence": "Windows VST3 build and actual JUCE editor screenshot CI passed; source merged",
       "host_test": "pending"
+    },
+    {
+      "product_id": "skell.preset",
+      "name": "Skell Preset",
+      "role": "Optional local presence only",
+      "repository": "skellyruno/skell-preset-vst",
+      "source_status": "implemented",
+      "evidence": "Windows VST3 build, native tests, and actual JUCE editor screenshots passed; source merged",
+      "host_test": "pending"
+    },
+    {
+      "product_id": "skell.eq",
+      "name": "Skelly EQ",
+      "role": "Optional local presence only",
+      "repository": "skellyruno/skell-eq-vst",
+      "source_status": "implemented",
+      "evidence": "Windows VST3 and macOS builds passed; source merged",
+      "host_test": "pending"
     }
   ]
 }

@@ -33,3 +33,11 @@ This launches an isolated hub on random loopback ports, registers two simulated 
 - **Planned:** not yet integrated or tested.
 
 Project Hub is independent. SkellWorld Developer Mode only points to its repository and read-only discovery contract, not a privileged control endpoint.
+
+
+## v0.5 plugin presence acceptance
+
+- **Skell Preset** — in Settings choose **Join SkellWorld**, verify `skell.preset` presence in SkellWorld, open two instances and inspect separate ephemeral IDs, then leave or close the editors. Save/reopen the FLP and verify effect chain and automation remain unchanged.
+- **Skelly EQ** — click the small **v2.7** badge → Join SkellWorld. Verify `skell.eq` presence and that the existing RANGE button still cycles graph range. Close/leave, confirm presence cleanup, and verify saved 8-band EQ curves remain unchanged.
+- **Connection health** — Creator Mode → Run Check should show joined sessions and known source integrations, not assert that unjoined products are installed. Idle instances should remain joined; their event age may grow without signalling a failure.
+- **Evidence** — record each tested plugin's VST3 SHA, FL Studio and Windows versions, project reload, UI close/reopen, CPU and no-crash result. Source CI success alone must never be labeled host-certified.

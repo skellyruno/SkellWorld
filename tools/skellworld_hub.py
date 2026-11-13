@@ -55,6 +55,7 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         super().__init__(address, WorldHandler)
         self.guard = threading.Lock()
         self.peers = {}
+        self.peer_activity = {}  # UI/status only, never the audio callback.
         self.booted = time.monotonic()
         self.events = deque(maxlen=80)
         self.sequence = 0
@@ -71,10 +72,25 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     def snapshot(self):
         """Return a bounded, JSON-compatible, read-only state snapshot."""
         with self.guard:
-            peers = sorted((
-                {"instance_id": ident, "product_id": product, "display_name": name}
-                for ident, product, name in self.peers.values()
-            ), key=lambda p: (p["product_id"], p["instance_id"]))
+            now = time.monotonic()
+            peers = []
+            for peer, (ident, product, name) in self.peers.items():
+                activity = self.peer_activity.get(peer)
+                if activity is None:
+                    continue
+                last = activity["last_event"]
+                peers.append({
+                    "instance_id": ident,
+                    "product_id": product,
+                    "display_name": name,
+                    "connected_seconds": max(0, int(now - activity["joined"])),
+                    "events_sent": activity["events"],
+                    # Inactivity alone does NOT mean a connection is offline.
+                    "last_event_seconds_ago": (
+                        max(0, int(now - last)) if last is not None else None
+                    ),
+                })
+            peers.sort(key=lambda p: (p["product_id"], p["instance_id"]))
             return {
                 "schema": "skellworld-status/1",
                 "peer_count": len(peers),
@@ -88,6 +104,10 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         with self.guard:
             info = self.peers.get(peer)
             if info is not None:
+                activity = self.peer_activity.get(peer)
+                if activity is not None:
+                    activity["events"] += 1
+                    activity["last_event"] = time.monotonic()
                 self._record_locked("event", info[0], info[1], topic + ": " + value)
                 if info[1] == "skell.key" and topic in {"musical.key", "musical.tuning"}:
                     if topic == "musical.tuning":
@@ -118,12 +138,16 @@ class WorldServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
                 return None
             existing = list(self.peers.items())
             self.peers[peer] = (ident, product, display)
+            self.peer_activity[peer] = {
+                "joined": time.monotonic(), "last_event": None, "events": 0
+            }
             self._record_locked("join", ident, product, display)
             return existing
 
     def unregister(self, peer):
         with self.guard:
             was = self.peers.pop(peer, None)
+            self.peer_activity.pop(peer, None)
             others = list(self.peers)
             if was:
                 self._record_locked("leave", was[0], was[1], "offline")

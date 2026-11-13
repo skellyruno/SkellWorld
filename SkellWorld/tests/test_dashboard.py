@@ -58,6 +58,9 @@ class DashboardTests(unittest.TestCase):
         payload = json.loads(raw)
         self.assertEqual(payload["peer_count"], 1)
         self.assertEqual(payload["peers"][0]["display_name"], "Skelly EQ")
+        self.assertEqual(payload["peers"][0]["events_sent"], 1)
+        self.assertGreaterEqual(payload["peers"][0]["connected_seconds"], 0)
+        self.assertIsNotNone(payload["peers"][0]["last_event_seconds_ago"])
         self.assertEqual([e["kind"] for e in payload["events"]], ["join", "event"])
         self.world.unregister(participant)
         self.assertEqual(json.loads(self.request()[1])["events"][-1]["kind"], "leave")
@@ -137,7 +140,7 @@ class DashboardTests(unittest.TestCase):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
         self.assertGreaterEqual(len(json.loads(raw)["plugins"]), 20)
-        for page, marker in [("/", b"INSTANCE INSPECTOR"), ("/style.css", b".inspector"), ("/app.js", b"renderInspector")]:
+        for page, marker in [("/", b"run-connection-check"), ("/style.css", b".health-grid"), ("/app.js", b"runConnectionCheck")]:
             status, body, _ = self.request(path=page)
             self.assertEqual(status, 200)
             self.assertIn(marker, body)
