@@ -2,7 +2,7 @@
 
 > Shared development standards for the Skelly ecosystem: audio plugins, SkellCore, SkellWorld, SkellForge, SkellyHub, websites, and tools.
 >
-> These are ecosystem-wide baseline rules. Follow more specific repository-level requirements where applicable. Do not delete or overwrite existing project-specific \`AGENTS.md\` files. To make these rules automatically discoverable by coding agents in another repository, place a copy or a repository-local reference there; a file in SkellWorld alone is **not automatically inherited** by other GitHub repositories.
+> These are ecosystem-wide baseline rules. Follow more specific repository-level requirements where applicable. Do not delete or overwrite existing project-specific `AGENTS.md` files. To make these rules automatically discoverable by coding agents in another repository, place a copy or a repository-local reference there; a file in SkellWorld alone is **not automatically inherited** by other GitHub repositories.
 
 ## 1. Development & Autonomy
 
