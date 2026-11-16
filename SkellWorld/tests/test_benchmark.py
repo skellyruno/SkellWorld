@@ -18,5 +18,14 @@ class WorldLoadTests(unittest.TestCase):
         self.assertGreaterEqual(result["join_latency"]["max_ms"], 0)
 
 
+    def test_client_nodelay_modes_keep_protocol_and_report_mode(self):
+        for enabled in (False, True):
+            with self.subTest(client_nodelay=enabled):
+                result = exercise(2, events=2, client_nodelay=enabled)
+                self.assertEqual(result["result"], "PASS")
+                self.assertEqual(result["client_tcp_nodelay"], enabled)
+                self.assertEqual(result["broadcast_recipients"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()
