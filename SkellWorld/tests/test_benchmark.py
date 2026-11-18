@@ -24,6 +24,9 @@ class WorldLoadTests(unittest.TestCase):
                 result = exercise(2, events=2, client_nodelay=enabled)
                 self.assertEqual(result["result"], "PASS")
                 self.assertEqual(result["client_tcp_nodelay"], enabled)
+                self.assertEqual(result["client_tcp_nodelay_observed"], enabled)
+                self.assertTrue(result["client_tcp_nodelay_sockets_verified"])
+                self.assertEqual(result["client_tcp_nodelay_sockets_checked"], 2)
                 self.assertEqual(result["broadcast_recipients"], 1)
 
 
