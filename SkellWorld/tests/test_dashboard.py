@@ -168,5 +168,18 @@ class DashboardTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             dashboard.DashboardServer(("0.0.0.0", 0), self.world)
 
+    def test_mobile_header_can_wrap_at_narrow_viewports(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        # At 320px, the wordmark and status badge must be allowed to wrap
+        # instead of forcing the dashboard shell wider than the viewport.
+        for rule in (
+            ".topbar{height:auto;min-height:90px;flex-wrap:wrap;padding:12px 0;gap:10px}",
+            ".brand{min-width:0;flex:1 1 180px;gap:10px}",
+            ".brand .eyebrow{font-size:8px;letter-spacing:1px}",
+            ".connection{margin-left:auto;flex-shrink:0;white-space:nowrap}",
+        ):
+            self.assertIn(rule, mobile)
+
 if __name__ == "__main__":
     unittest.main()
