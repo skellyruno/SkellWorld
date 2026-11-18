@@ -44,7 +44,19 @@ def _receive(stream):
     return data
 
 
-def exercise(peers: int, events: int = 8):
+def _set_client_nodelay(sock: socket.socket, enabled: bool) -> bool:
+    """Set TCP_NODELAY explicitly and verify the kernel's socket-option readback."""
+    requested = int(bool(enabled))
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, requested)
+    observed = bool(sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY))
+    if observed != bool(enabled):
+        raise AssertionError(
+            f"TCP_NODELAY readback mismatch: requested={bool(enabled)}, observed={observed}"
+        )
+    return observed
+
+
+def exercise(peers: int, events: int = 8, client_nodelay: bool = False):
     if not (1 <= peers <= MAX_CLIENTS):
         raise ValueError("Peer count must be 1..32")
     if not (1 <= events <= 20):
@@ -55,6 +67,7 @@ def exercise(peers: int, events: int = 8):
     sockets = []
     streams = []
     join_times, event_times, status_times = [], [], []
+    client_nodelay_states = []
     begin = time.perf_counter()
     cpu_start = time.process_time()
     tracemalloc.start()
@@ -71,6 +84,7 @@ def exercise(peers: int, events: int = 8):
             started = time.perf_counter()
             sock = socket.create_connection(world.server_address, timeout=5)
             sock.settimeout(5)
+            client_nodelay_states.append(_set_client_nodelay(sock, client_nodelay))
             stream = sock.makefile("rb")
             sockets.append(sock)
             streams.append(stream)
@@ -93,6 +107,7 @@ def exercise(peers: int, events: int = 8):
             extra = socket.create_connection(world.server_address, timeout=5)
             try:
                 extra.settimeout(5)
+                client_nodelay_states.append(_set_client_nodelay(extra, client_nodelay))
                 with extra.makefile("rb") as ef:
                     extra.sendall(encode("HELLO", "load-overflow",
                                          "skell.eq", "Overflow"))
@@ -140,11 +155,21 @@ def exercise(peers: int, events: int = 8):
         if sender_state["events_sent"] != events:
             raise AssertionError("Lost or duplicated synthetic events")
 
+        expected_client_sockets = peers + (1 if peers == MAX_CLIENTS else 0)
+        if len(client_nodelay_states) != expected_client_sockets:
+            raise AssertionError("Not every synthetic client socket had TCP_NODELAY verified")
+        if not all(state == bool(client_nodelay) for state in client_nodelay_states):
+            raise AssertionError("Synthetic client TCP_NODELAY states were inconsistent")
+
         _, allocated_peak = tracemalloc.get_traced_memory()
         return {
             "scenario": "synthetic-loopback-not-fl-studio",
             "instances": peers,
             "published_events": events,
+            "client_tcp_nodelay": client_nodelay,
+            "client_tcp_nodelay_observed": client_nodelay_states[0],
+            "client_tcp_nodelay_sockets_verified": True,
+            "client_tcp_nodelay_sockets_checked": len(client_nodelay_states),
             "broadcast_recipients": max(0, peers - 1),
             "join_latency": _percentiles(join_times),
             "event_fanout_latency": _percentiles(event_times),
@@ -182,13 +207,36 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--counts", default="1,8,16,32")
     parser.add_argument("--events", type=int, default=8)
+    parser.add_argument("--client-nodelay", action="store_true",
+                        help="set TCP_NODELAY on synthetic client sockets")
+    parser.add_argument("--compare-client-nodelay", action="store_true",
+                        help="run paired Nagle-on/off client socket scenarios")
+    parser.add_argument("--trials", type=int, default=1,
+                        help="repeated trials (1..20); A/B order alternates each trial")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     counts = [int(v) for v in args.counts.split(",")]
     if not counts or len(counts) != len(set(counts)):
         parser.error("Provide distinct, nonempty peer counts")
-    results = [exercise(count, events=args.events) for count in counts]
+    if args.client_nodelay and args.compare_client_nodelay:
+        parser.error("--client-nodelay and --compare-client-nodelay are mutually exclusive")
+    if not 1 <= args.trials <= 20:
+        parser.error("--trials must be between 1 and 20")
+    modes = (False, True) if args.compare_client_nodelay else (args.client_nodelay,)
+    results = []
+    for trial in range(1, args.trials + 1):
+        for count in counts:
+            # Alternate the pair order to reduce systematic warm-up/order bias.
+            trial_modes = modes if trial % 2 else tuple(reversed(modes))
+            for client_nodelay in trial_modes:
+                result = exercise(count, events=args.events,
+                                  client_nodelay=client_nodelay)
+                result["trial"] = trial
+                results.append(result)
     summary = {"schema": "skellworld-load-benchmark/1", "results": results,
+               "comparison": "client TCP_NODELAY off/on" if args.compare_client_nodelay else
+                             ("client TCP_NODELAY on" if args.client_nodelay else
+                              "client TCP_NODELAY platform default"),
                "warning": "Synthetic localhost protocol timings, not VST3/audio-thread performance"}
     payload = json.dumps(summary, indent=2) + "\n"
     print(payload, end="")
