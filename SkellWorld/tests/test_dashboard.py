@@ -181,5 +181,12 @@ class DashboardTests(unittest.TestCase):
         ):
             self.assertIn(rule, mobile)
 
+
+    def test_mobile_uptime_stat_spans_full_width(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        self.assertIn(".stats{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}", mobile)
+        self.assertIn(".stat:last-child{grid-column:1/-1}", mobile)
+
 if __name__ == "__main__":
     unittest.main()
