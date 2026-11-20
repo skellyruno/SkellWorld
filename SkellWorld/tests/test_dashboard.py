@@ -193,6 +193,7 @@ class DashboardTests(unittest.TestCase):
         css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
         mobile = css.split("@media(max-width:650px){", 1)[1]
         self.assertIn(".panel-heading{flex-wrap:wrap}", mobile)
+        self.assertIn(".panel-heading>div{min-width:0;flex:1 1 180px}", mobile)
         self.assertIn(".panel-heading>.pill{margin-left:auto}", mobile)
 
 if __name__ == "__main__":
