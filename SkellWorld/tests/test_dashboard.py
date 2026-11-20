@@ -168,5 +168,33 @@ class DashboardTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             dashboard.DashboardServer(("0.0.0.0", 0), self.world)
 
+    def test_mobile_header_can_wrap_at_narrow_viewports(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        # At 320px, the wordmark and status badge must be allowed to wrap
+        # instead of forcing the dashboard shell wider than the viewport.
+        for rule in (
+            ".topbar{height:auto;min-height:90px;flex-wrap:wrap;padding:12px 0;gap:10px}",
+            ".brand{min-width:0;flex:1 1 180px;gap:10px}",
+            ".brand .eyebrow{font-size:8px;letter-spacing:1px}",
+            ".connection{margin-left:auto;flex-shrink:0;white-space:nowrap}",
+        ):
+            self.assertIn(rule, mobile)
+
+
+    def test_mobile_uptime_stat_spans_full_width(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        self.assertIn(".stats{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}", mobile)
+        self.assertIn(".stat:last-child{grid-column:1/-1}", mobile)
+
+
+    def test_mobile_panel_heading_badges_wrap_without_entering_panel_padding(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        self.assertIn(".panel-heading{flex-wrap:wrap}", mobile)
+        self.assertIn(".panel-heading>div{min-width:0;flex:1 1 180px}", mobile)
+        self.assertIn(".panel-heading>.pill{margin-left:auto}", mobile)
+
 if __name__ == "__main__":
     unittest.main()
