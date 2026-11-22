@@ -1,9 +1,8 @@
 name: SkellCore portable DSP tests
-# Iterative plugin development often pushes many commits. Cancel superseded
-# branch/PR runs to avoid multiple resource-heavy JUCE builds in parallel.
+# Cancel outdated pull-request checks only; preserve manual, main and release runs.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 on:
   push:
