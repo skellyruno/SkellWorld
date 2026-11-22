@@ -54,6 +54,8 @@
 - Change only the requested elements and avoid modifying unrelated UI components.
 - Prefer SkellCore shared UI components and the existing **Quick4 local renderer** for fast previews and inspections.
 - Use real application screenshots to verify visual changes.
+- **Mandatory screenshot → inspect → fix → rescreenshot loop:** after every meaningful UI change, open the exact latest real app/plugin screenshots yourself, visually audit for asset bleed, clipped or overlapping controls, wrong scale, misalignment, contrast, shadows, animations and broken states, and proactively fix **all visible defects** before declaring polish complete. Rebuild and re-inspect the corrected screenshots.
+- Do not treat a passing build, automated geometry assertion or screenshot file's existence as proof that the UI looks correct. Report any remaining unverified visual issue explicitly.
 - Never generate mockup images unless I explicitly request them.
 - Inspect text alignment, clipping, spacing, contrast, knobs, meters, menus, hover states, and animation smoothness.
 - Check multiple window sizes, scaling levels, and display resolutions.
