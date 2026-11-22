@@ -38,3 +38,13 @@ implementation before raising capacity or introducing remote controls.
 ### Small-frame transport tuning
 
 The hub asks the OS to set `TCP_NODELAY` on accepted localhost SW1 sockets so short presence and event messages do not wait behind Nagle/delayed-ACK interactions. It keeps the existing bounded write deadline and per-peer send locks. A failure to set this optional socket mode is nonfatal. The benchmark records observed latency on each runner and does **not** promise any particular absolute latency or PDC inside a DAW.
+
+### Client-side Nagle A/B
+
+The synthetic clients use the platform default (Nagle enabled unless the OS default differs) unless explicitly configured. To compare client-side `TCP_NODELAY` on and off on the **same machine**, alternate the pair order across repeated trials:
+
+```powershell
+python tools/benchmark_skellworld.py --counts 1,8,16,32 --events 8 --compare-client-nodelay --trials 5 --output client-nodelay-ab.json
+```
+
+Each result records the requested `client_tcp_nodelay`, the kernel-read-back `client_tcp_nodelay_observed`, the number of sockets checked, and `trial`. The harness explicitly writes TCP_NODELAY=0 or 1 on every synthetic client socket (including the capacity-overflow probe), then reads the option back; a mismatch fails the scenario instead of silently recording the requested mode as if it had been applied. Off/on order alternates on successive trials to reduce warm-up bias. Compare p50/p95/max by peer count and mode. This is a localhost transport experiment only, not DAW audio latency, VST3 PDC, or a substitute for the Windows FL Studio host plan.

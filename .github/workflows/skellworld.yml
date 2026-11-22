@@ -46,3 +46,14 @@ jobs:
           path: skellworld-benchmark.json
           if-no-files-found: error
           retention-days: 14
+      - name: Paired client TCP_NODELAY A/B (${{ matrix.os }})
+        if: matrix.python-version == '3.13'
+        run: python tools/benchmark_skellworld.py --counts 1,8,16,32 --events 8 --compare-client-nodelay --trials 5 --output client-nodelay-ab.json
+      - name: Upload paired client TCP_NODELAY observations
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: skellworld-client-nodelay-ab-${{ matrix.os }}-py3.13
+          path: client-nodelay-ab.json
+          if-no-files-found: error
+          retention-days: 14
