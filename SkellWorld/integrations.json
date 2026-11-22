@@ -46,6 +46,15 @@
       "source_status": "implemented",
       "evidence": "Windows VST3 and macOS builds passed; source merged",
       "host_test": "pending"
+    },
+    {
+      "product_id": "skell.deesser",
+      "name": "Skelly DeEsser",
+      "role": "Optional local presence only",
+      "repository": "skellyruno/skell-deesser-vst",
+      "source_status": "candidate",
+      "evidence": "Settings-menu WorldLink source is under CI review; Windows VST3, pluginval and real JUCE editor renderer not yet confirmed",
+      "host_test": "pending"
     }
   ]
 }

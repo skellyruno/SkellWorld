@@ -41,3 +41,10 @@ Project Hub is independent. SkellWorld Developer Mode only points to its reposit
 - **Skelly EQ** — click the small **v2.7** badge → Join SkellWorld. Verify `skell.eq` presence and that the existing RANGE button still cycles graph range. Close/leave, confirm presence cleanup, and verify saved 8-band EQ curves remain unchanged.
 - **Connection health** — Creator Mode → Run Check should show joined sessions and known source integrations, not assert that unjoined products are installed. Idle instances should remain joined; their event age may grow without signalling a failure.
 - **Evidence** — record each tested plugin's VST3 SHA, FL Studio and Windows versions, project reload, UI close/reopen, CPU and no-crash result. Source CI success alone must never be labeled host-certified.
+
+
+## DeEsser source integration pilot — pending Windows verification
+
+The proposed Skelly DeEsser change adds **MENU → SkellWorld → Join/Leave** as an optional, editor-scoped presence link. While source CI is pending, the SkellWorld catalog remains **planned** and the integration readiness panel marks DeEsser as **candidate**. Do not describe this as Windows or FL Studio verified until the VST3 build, pluginval and real-editor screenshot checks pass.
+
+After a passing build: install the exact new DeEsser VST3, load it into FL Studio, open/close its editor with and without the local hub, check Join/Leave and two instances, verify no audio changes or added latency, and confirm FLP save/reopen retains all existing processing parameters. The menu only shares presence, not sibilance data or presets.

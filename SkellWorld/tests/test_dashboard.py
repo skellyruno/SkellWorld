@@ -136,6 +136,14 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.request(path="/api/launch")[0], 404)
         self.assertEqual(self.request(method="POST", path="/api/projecthub")[0], 405)
 
+    def test_deesser_remains_pending_until_ci_is_verified(self):
+        status, raw, _ = self.request(path="/api/integrations")
+        self.assertEqual(status, 200)
+        pilots = json.loads(raw)["pilots"]
+        deesser = next(p for p in pilots if p["product_id"] == "skell.deesser")
+        self.assertEqual(deesser["source_status"], "candidate")
+        self.assertEqual(deesser["host_test"], "pending")
+
     def test_catalog_and_static_assets(self):
         code, raw, _ = self.request(path="/api/catalog")
         self.assertEqual(code, 200)
