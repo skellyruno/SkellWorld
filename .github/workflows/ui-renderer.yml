@@ -1,5 +1,10 @@
 name: SkellCore / Headless JUCE UI renderer
 
+# Superseded pull-request runs may cancel; manual, main and release runs may not.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 on:
   push:
     branches: [main]
