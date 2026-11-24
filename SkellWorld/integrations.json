@@ -47,5 +47,43 @@
       "evidence": "Windows VST3 and macOS builds passed; source merged",
       "host_test": "pending"
     }
-  ]
+  ],
+  "build_snapshot": {
+    "date": "2026-11-23",
+    "note": "Historical exact-commit CI evidence, not a live status feed. These are separate component runs, not proof of a completed end-to-end host test.",
+    "components": [
+      {
+        "name": "Forge · JUCE Gain",
+        "repository": "skellyruno/skellforge",
+        "commit": "7333bedba2fb971c4c1d0dcbcfb7481305faee51",
+        "run_id": "45325387204",
+        "evidence": "Generated a new JUCE/SkellCore VST3, validated and packaged Windows x64. Artifact uploaded.",
+        "host_test": "NOT_RUN"
+      },
+      {
+        "name": "Native · Gain / Mini / Spacer",
+        "repository": "skellyruno/skellnative",
+        "commit": "f14e3fb13727b3fc7b25a9d862495725a5a45145",
+        "run_id": "45325345674",
+        "evidence": "Windows VST3, official validator, binary audio/parity matrix, real editor captures and isolated FL Studio preflight passed in CI. Captures not independently reviewed for this record.",
+        "host_test": "NOT_RUN"
+      },
+      {
+        "name": "Core · shared DSP and Quick4",
+        "repository": "skellyruno/skellcore-vst-template",
+        "commit": "cf145d9a81c9f8c5e61f9583b18cee75505e913c",
+        "run_id": "45326964986",
+        "evidence": "Windows/Linux C++ tests, Linux ASan/UBSan and platform-specific Quick4 command contracts passed. No new local JUCE capture.",
+        "host_test": "NOT_RUN"
+      },
+      {
+        "name": "World · dashboard",
+        "repository": "skellyruno/SkellWorld",
+        "commit": "e6d4c3c9156169cc173c1ea8b1b875eb8e985c03",
+        "run_id": "45325304078",
+        "evidence": "Portable Windows application CI passed. Separate dashboard CI 45325303959 passed.",
+        "host_test": "NOT_RUN"
+      }
+    ]
+  }
 }

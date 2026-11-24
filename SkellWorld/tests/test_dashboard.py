@@ -99,6 +99,19 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(pilots["skell.tune"]["host_test"], "pending")
         self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
 
+    def test_ecosystem_snapshot_is_historical_and_not_host_certification(self):
+        status, raw, _ = self.request(path="/api/integrations")
+        self.assertEqual(status, 200)
+        snapshot = json.loads(raw)["build_snapshot"]
+        self.assertIn("not a live status feed", snapshot["note"])
+        self.assertEqual(len(snapshot["components"]), 4)
+        for component in snapshot["components"]:
+            self.assertRegex(component["commit"], r"^[a-f0-9]{40}$")
+            self.assertRegex(component["run_id"], r"^[0-9]+$")
+            self.assertEqual(component["host_test"], "NOT_RUN")
+        self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
+        self.assertIn(b'id="ecosystem-build-evidence"', self.request(path="/")[1])
+
     def test_projecthub_summary_requires_opt_in_and_valid_counts(self):
         with tempfile.TemporaryDirectory() as root:
             file = Path(root) / "projecthub-summary-v1.json"
@@ -167,6 +180,34 @@ class DashboardTests(unittest.TestCase):
     def test_non_loopback_binding_rejected(self):
         with self.assertRaises(ValueError):
             dashboard.DashboardServer(("0.0.0.0", 0), self.world)
+
+    def test_mobile_header_can_wrap_at_narrow_viewports(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        # At 320px, the wordmark and status badge must be allowed to wrap
+        # instead of forcing the dashboard shell wider than the viewport.
+        for rule in (
+            ".topbar{height:auto;min-height:90px;flex-wrap:wrap;padding:12px 0;gap:10px}",
+            ".brand{min-width:0;flex:1 1 180px;gap:10px}",
+            ".brand .eyebrow{font-size:8px;letter-spacing:1px}",
+            ".connection{margin-left:auto;flex-shrink:0;white-space:nowrap}",
+        ):
+            self.assertIn(rule, mobile)
+
+
+    def test_mobile_uptime_stat_spans_full_width(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        self.assertIn(".stats{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}", mobile)
+        self.assertIn(".stat:last-child{grid-column:1/-1}", mobile)
+
+
+    def test_mobile_panel_heading_badges_wrap_without_entering_panel_padding(self):
+        css = (ROOT / "SkellWorld" / "web" / "style.css").read_text(encoding="utf-8")
+        mobile = css.split("@media(max-width:650px){", 1)[1]
+        self.assertIn(".panel-heading{flex-wrap:wrap}", mobile)
+        self.assertIn(".panel-heading>div{min-width:0;flex:1 1 180px}", mobile)
+        self.assertIn(".panel-heading>.pill{margin-left:auto}", mobile)
 
 if __name__ == "__main__":
     unittest.main()

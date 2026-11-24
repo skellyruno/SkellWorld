@@ -336,6 +336,34 @@ async function refreshProjectHub() {
     projectHubBusy = false;
   }
 }
+function renderBuildSnapshot(snapshot) {
+  const holder = byId("ecosystem-build-evidence");
+  if (!snapshot || !Array.isArray(snapshot.components)) {
+    holder.replaceChildren(node("p", "muted", "No recorded build evidence."));
+    return;
+  }
+  byId("ecosystem-build-note").textContent = snapshot.date + " · " + snapshot.note;
+  holder.replaceChildren(...snapshot.components.map(component => {
+    const card = node("article", "readiness-card");
+    card.append(node("strong", "readiness-name", component.name),
+      node("span", "readiness-state", "HISTORICAL CI PASS"),
+      node("p", "muted", component.evidence),
+      node("p", "readiness-pending", "FL STUDIO HOST TEST: " + component.host_test));
+    if (/^skellyruno\/[A-Za-z0-9_.-]+$/.test(component.repository) &&
+        /^[a-f0-9]{40}$/.test(component.commit) && /^[0-9]+$/.test(component.run_id)) {
+      const commit = node("a", "companion-link", "SOURCE " + component.commit.slice(0, 7));
+      commit.href = "https://github.com/" + component.repository + "/commit/" + component.commit;
+      const run = node("a", "companion-link", "CI RUN");
+      run.href = "https://github.com/" + component.repository + "/actions/runs/" + component.run_id;
+      for (const link of [commit, run]) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        card.append(link);
+      }
+    }
+    return card;
+  }));
+}
 function renderIntegrationReadiness(data) {
   const holder = byId("integration-readiness");
   const pilots = Array.isArray(data.pilots) ? data.pilots : [];
@@ -370,8 +398,10 @@ async function loadIntegrationReadiness() {
     const data = await response.json();
     if (data.schema !== "skellworld-integrations/1") throw Error("unsupported integration profile");
     renderIntegrationReadiness(data);
+    renderBuildSnapshot(data.build_snapshot);
   } catch (_error) {
     byId("integration-readiness").replaceChildren(node("p", "muted", "Integration evidence unavailable."));
+    renderBuildSnapshot(null);
   }
 }
 function renderCompanions(data) {
