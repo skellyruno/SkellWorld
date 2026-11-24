@@ -99,6 +99,19 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(pilots["skell.tune"]["host_test"], "pending")
         self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
 
+    def test_ecosystem_snapshot_is_historical_and_not_host_certification(self):
+        status, raw, _ = self.request(path="/api/integrations")
+        self.assertEqual(status, 200)
+        snapshot = json.loads(raw)["build_snapshot"]
+        self.assertIn("not a live status feed", snapshot["note"])
+        self.assertEqual(len(snapshot["components"]), 4)
+        for component in snapshot["components"]:
+            self.assertRegex(component["commit"], r"^[a-f0-9]{40}$")
+            self.assertRegex(component["run_id"], r"^[0-9]+$")
+            self.assertEqual(component["host_test"], "NOT_RUN")
+        self.assertEqual(self.request(method="POST", path="/api/integrations")[0], 405)
+        self.assertIn(b'id="ecosystem-build-evidence"', self.request(path="/")[1])
+
     def test_projecthub_summary_requires_opt_in_and_valid_counts(self):
         with tempfile.TemporaryDirectory() as root:
             file = Path(root) / "projecthub-summary-v1.json"
