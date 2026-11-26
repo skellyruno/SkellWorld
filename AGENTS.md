@@ -128,3 +128,7 @@
 - Provide a concise handoff for a new chat containing the project, repository, branch, latest commit, completed work, test results, outstanding failures, and next priorities.
 - Preserve important technical decisions and approved UI designs.
 - Make the handoff detailed enough to continue development without repeating earlier work.
+
+## Offline JUCE / Quick4 continuity
+
+- At the start of every Skelly development chat, locate and reuse the newest verified SKELLY_QUICK4_OFFLINE_KIT in ChatGPT Library (initial bundle: /SKELLY_QUICK4_OFFLINE_KIT_2026-11-26.zip) for the project's pinned JUCE version and matching offline dependencies; verify checksums, use local JUCE_PATH with FetchContent disconnected, resume existing build caches, and build/capture/inspect the actual UI. Do not refetch a cached dependency or claim native visual success before compilation and screenshot inspection. Debian 13 amd64 overlay is platform-specific; never replace system DNS or core libraries to force the build.
