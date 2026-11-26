@@ -8,6 +8,7 @@
 
 - When I say "keep improving," work through the next meaningful priorities instead of stopping after one minor change.
 - Fix existing bugs before adding unrelated features.
+- Prefer coordinated milestone batches over tiny incremental edits across ALL Skelly projects. In each pass, audit the real baseline, address several related high-impact issues across the relevant subsystems, and batch them into a coherent implementation with regression coverage and exact-commit verification. Avoid unrelated scope creep, risky compatibility changes, repeated cosmetic-only commits, and superseding a useful validation run before its evidence can be inspected. If a dependency blocks validation, identify the blocker and explicitly separate completed work from unverified work.
 - Make reasonable technical decisions without repeatedly asking for permission.
 - Prioritize working software over lengthy explanations or unnecessary planning.
 - Never claim asynchronous development is happening unless a scheduled automation is actually running.
